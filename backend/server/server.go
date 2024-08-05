@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/1boombacks1/stat_dice/appctx"
+	"github.com/1boombacks1/stat_dice/server/handlers"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -41,11 +42,11 @@ func NewHTTPServer(ctx *appctx.AppCtx) *HTTPServer {
 
 func (s *HTTPServer) initRoutes() {
 	s.router.Route("/auth", func(r chi.Router) {
-
+		r.Post("/login", handlers.Login)
 	})
 
 	s.router.Route("/api", func(r chi.Router) {
-
+		r.Use()
 	})
 }
 

@@ -3,8 +3,8 @@ package middlewares
 import "net/http"
 
 func Auth(next http.Handler) http.Handler {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		next
-	}
+		next.ServeHTTP(w, r)
+	})
 }
