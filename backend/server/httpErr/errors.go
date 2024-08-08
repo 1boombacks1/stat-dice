@@ -15,9 +15,10 @@ type ErrResponse struct {
 	statusCode int   `json:"-"`
 }
 
-func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) {
+func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	render.Status(r, e.statusCode)
 	render.DefaultResponder(w, r, e)
+	return nil
 }
 
 func (e *ErrResponse) Error() string {

@@ -10,6 +10,7 @@ import (
 
 	"github.com/1boombacks1/stat_dice/appctx"
 	"github.com/1boombacks1/stat_dice/server/handlers"
+	"github.com/1boombacks1/stat_dice/server/middlewares"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -19,7 +20,7 @@ type HTTPServer struct {
 	http.Server
 }
 
-// type HTTPHandler func(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request)
+type HTTPHandler func(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request)
 
 func NewHTTPServer(ctx *appctx.AppCtx) *HTTPServer {
 	mux := newRouter(ctx)
@@ -42,19 +43,20 @@ func NewHTTPServer(ctx *appctx.AppCtx) *HTTPServer {
 
 func (s *HTTPServer) initRoutes() {
 	s.router.Route("/auth", func(r chi.Router) {
-		r.Post("/login", handlers.Login)
+		s.DefineRoute(r, "POST", "/login", handlers.Login)
+		s.DefineRoute(r, "POST", "/registration", handlers.Registration)
 	})
 
 	s.router.Route("/api", func(r chi.Router) {
-		r.Use()
+		r.Use(middlewares.Auth)
 	})
 }
 
-// func (s *HTTPServer) DefineRoute(rt chi.Router, method, path string, callback HTTPHandler) {
-// 	rt.MethodFunc(method, path, func(w http.ResponseWriter, r *http.Request) {
-// 		callback(s.ctx, w, r)
-// 	})
-// }
+func (s *HTTPServer) DefineRoute(rt chi.Router, method, path string, callback HTTPHandler) {
+	rt.MethodFunc(method, path, func(w http.ResponseWriter, r *http.Request) {
+		callback(s.ctx, w, r)
+	})
+}
 
 func (hs *HTTPServer) Start() error {
 	err := hs.Server.ListenAndServe()
