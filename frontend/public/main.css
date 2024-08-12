@@ -1,0 +1,20 @@
+.content.create-lobby {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lobby-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0 10%;
+    margin-top: 5%;
+    gap: 0.6rem;
+}
+
+.host-end-buttons button:first-child {
+    background-color: var(--color-purple);
+    color: white;
+    border: 1px black solid;
+}

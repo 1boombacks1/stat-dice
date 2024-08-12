@@ -30,8 +30,8 @@
         <div class="block sign-in" hx-ext="response-targets">
             <h1>Sign in</h1>
             <form class="auth-form" id="form-sign-in" hx-post="/auth/login" hx-target-error="#err-sign-in" hx-swap="outerHTML">
-                <input class="auth-input" name="login"placeholder="login..."/>
-                <input class="auth-input" type="password" name="password" placeholder="password..."/>
+                <input class="auth-input" name="login" placeholder="login..." required/>
+                <input class="auth-input" type="password" name="password" placeholder="password..." required/>
                 <button type="submit" class="auth-btn">Login</button>
             </form>
             <p id="err-sign-in" style="display: none;">Ошибка тут</p>
@@ -41,10 +41,10 @@
             <h1>Sign up</h1>
             <form class="auth-form" id="form-sign-up"
                 hx-post="/auth/register" hx-target="#success-label" hx-target-error="#err-sign-up" hx-swap="outerHTML">
-                <input class="auth-input" name="nickname" placeholder="nickname..."/>
-                <input class="auth-input" name="login" placeholder="login..."/>
-                <input class="auth-input" type="password" name="password" placeholder="password..."/>
-                <input class="auth-input" type="password" name="repeat-password" placeholder="again password..."/>
+                <input class="auth-input" name="nickname" placeholder="nickname..." required/>
+                <input class="auth-input" name="login" placeholder="login..." required/>
+                <input class="auth-input" type="password" name="password" placeholder="password..." required/>
+                <input class="auth-input" type="password" name="repeat-password" placeholder="again password..." required/>
                 <button type="submit" class="auth-btn">Registration</button>
             </form>
             <p id="success-label" style="display: none;">Тут результат</p>
