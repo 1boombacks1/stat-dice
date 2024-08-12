@@ -1,0 +1,65 @@
+{{ define "auth" }}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- deploy -->
+    <link rel="stylesheet" href="../css/auth.css">
+    <link rel="stylesheet" href="../css/fonts.css">
+
+    <!-- test -->
+    <!-- <link rel="stylesheet" href="../../resources/css/auth.css">
+    <link rel="stylesheet" href="../../resources/css/fonts.css"> -->
+
+    <script src="https://unpkg.com/htmx.org@2.0.1"></script>
+    <script src="https://unpkg.com/htmx-ext-response-targets@2.0.0/response-targets.js"></script>
+    <title>Login</title>
+</head>
+<body>
+    <div class="switch">
+        <p class="underline">log</p>
+        <div class="toggle">
+            <div class="rectangle"></div>
+            <div class="circle"></div>
+        </div>
+        <p>reg</p>
+    </div>
+    <div class="auth">
+        <div class="block sign-in" hx-ext="response-targets">
+            <h1>Sign in</h1>
+            <form class="auth-form" id="form-sign-in" hx-post="/auth/login" hx-target-error="#err-sign-in" hx-swap="outerHTML">
+                <input class="auth-input" name="login"placeholder="login..."/>
+                <input class="auth-input" type="password" name="password" placeholder="password..."/>
+                <button type="submit" class="auth-btn">Login</button>
+            </form>
+            <p id="err-sign-in" style="display: none;">Ошибка тут</p>
+        </div>
+
+        <div class="block sign-up deactive" hx-ext="response-targets">
+            <h1>Sign up</h1>
+            <form class="auth-form" id="form-sign-up"
+                hx-post="/auth/register" hx-target="#success-label" hx-target-error="#err-sign-up" hx-swap="outerHTML">
+                <input class="auth-input" name="nickname" placeholder="nickname..."/>
+                <input class="auth-input" name="login" placeholder="login..."/>
+                <input class="auth-input" type="password" name="password" placeholder="password..."/>
+                <input class="auth-input" type="password" name="repeat-password" placeholder="again password..."/>
+                <button type="submit" class="auth-btn">Registration</button>
+            </form>
+            <p id="success-label" style="display: none;">Тут результат</p>
+            <p id="err-sign-up" style="display: none;">Ошибка тут</p>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('.toggle').addEventListener('click', function() {
+            const toggle = document.querySelector('.toggle');
+            toggle.classList.toggle('on');
+            document.querySelector('.auth').classList.toggle('active')
+            document.querySelectorAll('.switch p').forEach(el => el.classList.toggle("underline"))
+        });
+    </script>
+</body>
+</html>
+{{ end }}

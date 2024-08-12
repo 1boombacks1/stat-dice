@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/1boombacks1/stat_dice/appctx"
+	"github.com/1boombacks1/stat_dice/resources"
 	"github.com/1boombacks1/stat_dice/server/handlers"
 	"github.com/1boombacks1/stat_dice/server/middlewares"
 	"github.com/go-chi/chi/v5"
@@ -42,14 +43,26 @@ func NewHTTPServer(ctx *appctx.AppCtx) *HTTPServer {
 }
 
 func (s *HTTPServer) initRoutes() {
-	s.router.Route("/auth", func(r chi.Router) {
-		s.DefineRoute(r, "POST", "/login", handlers.Login)
-		s.DefineRoute(r, "POST", "/registration", handlers.Registration)
-	})
+	s.router.Get("/css/*", http.FileServer(http.FS(resources.CSS)).ServeHTTP)
+	s.router.Get("/fonts/*", http.FileServer(http.FS(resources.Fonts)).ServeHTTP)
+	s.router.Get("/images/*", http.FileServer(http.FS(resources.Images)).ServeHTTP)
+	s.router.Get("/js/*", http.FileServer(http.FS(resources.JS)).ServeHTTP)
 
-	s.router.Route("/api", func(r chi.Router) {
-		r.Use(middlewares.Auth)
-	})
+	{
+		s.DefineRoute(s.router, "GET", "/", handlers.Auth)
+		s.DefineRoute(s.router, "GET", "/login", handlers.Auth)
+	}
+
+	{
+		s.router.Route("/auth", func(r chi.Router) {
+			s.DefineRoute(r, "POST", "/login", handlers.Login)
+			s.DefineRoute(r, "POST", "/register", handlers.Registration)
+		})
+
+		s.router.Route("/api", func(r chi.Router) {
+			r.Use(middlewares.Auth)
+		})
+	}
 }
 
 func (s *HTTPServer) DefineRoute(rt chi.Router, method, path string, callback HTTPHandler) {

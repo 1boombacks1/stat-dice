@@ -17,7 +17,6 @@ type ErrResponse struct {
 
 func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	render.Status(r, e.statusCode)
-	render.DefaultResponder(w, r, e)
 	return nil
 }
 

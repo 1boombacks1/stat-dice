@@ -85,7 +85,9 @@ func GetUserByJWT(ctx *appctx.AppCtx, token string) (*User, error) {
 
 func getUserByLogin(ctx *appctx.AppCtx, login string) (*User, error) {
 	var user *User
-	if err := ctx.DB().Where("login = ?", login).First(user).Error; err != nil {
+	// Take() ищет без сортировки, в отличии от First() или Last()
+	// Find() не возвращает ошибку ErrRecordNotFound. Принимает как одну струкутуру так и срез
+	if err := ctx.DB().Where("login = ?", login).Take(user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -93,6 +95,14 @@ func getUserByLogin(ctx *appctx.AppCtx, login string) (*User, error) {
 	}
 
 	return user, nil
+}
+
+func GetUserFromContext(ctx *appctx.AppCtx) *User {
+	u, ok := ctx.Value(userCtxKey{}).(*User)
+	if !ok {
+		return nil
+	}
+	return u
 }
 
 func (u *User) WithContext(ctx *appctx.AppCtx) *appctx.AppCtx {

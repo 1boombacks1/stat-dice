@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=stat_dice
+      - POSTGRES_USER=d0c
+      - POSTGRES_PASSWORD=d0c
+    ports:
+      - 5433:5432
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-d", "stat_dice", "-U", "d0c" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
