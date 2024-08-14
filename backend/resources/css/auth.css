@@ -28,6 +28,10 @@ body {
     gap: 20px;
 }
 
+.none {
+    display: none;
+}
+
 .auth {
     width: 100%;
     height: 56%;

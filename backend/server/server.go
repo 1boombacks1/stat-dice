@@ -11,7 +11,6 @@ import (
 	"github.com/1boombacks1/stat_dice/appctx"
 	"github.com/1boombacks1/stat_dice/resources"
 	"github.com/1boombacks1/stat_dice/server/handlers"
-	"github.com/1boombacks1/stat_dice/server/middlewares"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -49,18 +48,21 @@ func (s *HTTPServer) initRoutes() {
 	s.router.Get("/js/*", http.FileServer(http.FS(resources.JS)).ServeHTTP)
 
 	{
-		s.DefineRoute(s.router, "GET", "/", handlers.Auth)
-		s.DefineRoute(s.router, "GET", "/login", handlers.Auth)
+		s.DefineRoute(s.router, "GET", "/", handlers.AuthPage)
+		s.DefineRoute(s.router, "GET", "/login", handlers.AuthPage)
+
+		s.router.Route("/counter", func(r chi.Router) {
+			// r.Use(middlewares.Auth)
+			s.DefineRoute(r, "GET", "/", handlers.MainPage)
+			s.DefineRoute(r, "GET", "/create-lobby", handlers.CreateLobbyPage)
+			s.DefineRoute(r, "GET", "/find-lobbies", handlers.FindLobbies)
+		})
 	}
 
 	{
 		s.router.Route("/auth", func(r chi.Router) {
 			s.DefineRoute(r, "POST", "/login", handlers.Login)
 			s.DefineRoute(r, "POST", "/register", handlers.Registration)
-		})
-
-		s.router.Route("/api", func(r chi.Router) {
-			r.Use(middlewares.Auth)
 		})
 	}
 }
