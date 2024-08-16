@@ -1,4 +1,6 @@
+/* create css  */
 .create-lobby {
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -10,9 +12,34 @@
     justify-content: center;
     margin: 0 10%;
     margin-top: 5%;
-    gap: 0.6rem;
+    gap: 0.7rem;
 }
 
+.lobby-input {
+    outline: none;
+    border: 1px solid black;
+    border-radius: 9px;
+    padding: 7px 11px;
+    margin: 0 4px 4px 0;
+    box-shadow: 4px 4px black;
+}
+.lobby-input:focus {
+    border: 2px solid var(--color-purple);
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    margin-bottom: .5rem;
+}
+
+.checkbox label {
+    text-decoration: underline;
+}
+
+/* find css */
 .host-end-buttons button:first-child {
     background-color: var(--color-purple);
     color: white;

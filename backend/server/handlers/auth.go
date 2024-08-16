@@ -39,6 +39,12 @@ func Login(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 
 	user, err := models.GetUserByCredentials(ctx, login, password)
 	if err != nil {
+		if errors.Is(err, models.ErrUserNotFound) {
+			httpErrors.ErrUnauthorized(errors.New("invalid credentials")).
+				SetElementID(signInErrElement).Execute(w, httpErrors.AuthErrTmplName, ctx.Error())
+			return
+		}
+
 		httpErrors.ErrInternalServer(fmt.Errorf("failed to get user: %w", err)).
 			SetElementID(signInErrElement).Execute(w, httpErrors.AuthErrTmplName, ctx.Error())
 		return

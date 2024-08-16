@@ -41,7 +41,7 @@ func (m *Match) GetPlayers(db *gorm.DB) ([]*User, error) {
 		return nil, fmt.Errorf("getting players: %w", err)
 	}
 	if len(players) == 0 {
-		return nil, ErrNotFound
+		return nil, ErrPlayersNotFound
 	}
 
 	m.PlayerCount = len(players)

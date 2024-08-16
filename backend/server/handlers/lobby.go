@@ -9,6 +9,7 @@ import (
 	"github.com/1boombacks1/stat_dice/models"
 	httpErrors "github.com/1boombacks1/stat_dice/server/http_errors"
 	"github.com/go-chi/render"
+	"github.com/google/uuid"
 )
 
 type listInfo struct {
@@ -128,6 +129,7 @@ func CreateLobby(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	isCompetitive := r.FormValue("competitive") == "on"
 	lobbyName := r.FormValue("lobby-name")
 	if lobbyName == "" {
 		httpErrors.ErrBadRequest(errors.New("lobby name not specified")).SetTitle("Create Lobby Error").
@@ -144,7 +146,14 @@ func CreateLobby(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	}
 	gameID := cookie.Value
 
-	lobbyID, err := user.CreateLobby(ctx, lobbyName, gameID)
+	lobby := &models.Lobby{
+		Name:          lobbyName,
+		Status:        models.LOBBY_STATUS_OPEN,
+		GameID:        uuid.MustParse(gameID),
+		IsCompetitive: isCompetitive,
+	}
+
+	lobbyID, err := user.CreateLobby(ctx, lobby)
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("creating lobby: %w", err)).SetTitle("DB Error").
 			Execute(w, httpErrors.AppErrTmplName, ctx.Error())

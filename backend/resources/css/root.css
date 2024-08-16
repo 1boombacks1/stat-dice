@@ -14,17 +14,6 @@ body {
     display: flex;
     flex-direction: column;
 }
-input {
-    outline: none;
-    border: 1px solid black;
-    border-radius: 9px;
-    padding: 7px 11px;
-    margin: 0 4px 4px 0;
-    box-shadow: 4px 4px black;
-}
-input:focus {
-    border: 2px solid var(--color-purple);
-}
 
 .none {
     display: none;

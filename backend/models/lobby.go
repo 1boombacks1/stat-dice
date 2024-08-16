@@ -13,10 +13,11 @@ import (
 type Lobby struct {
 	Base
 
-	Name      string      `gorm:"not null"`
-	Status    LobbyStatus `gorm:"not null"`
-	StartedAt *time.Time
-	EndedAt   *time.Time
+	Name          string      `gorm:"not null"`
+	Status        LobbyStatus `gorm:"not null"`
+	StartedAt     *time.Time
+	EndedAt       *time.Time
+	IsCompetitive bool `gorm:"not null;default:false"`
 
 	GameID uuid.UUID `gorm:"type:uuid;not null"`
 	Game   Game

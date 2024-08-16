@@ -70,12 +70,12 @@
 {{ end }}
 
 {{ define "lobby-player-btns" }}
-<div class="player-buttons d-flex flex-column align-items-center column-gap-1">
+<div id="player-buttons" class="player-buttons d-flex flex-column align-items-center column-gap-1">
     <div class="d-flex flex-row col-12 column-gap-1">
         <button class="btn btn-success col-6 rounded-3" type="button"
-            hx-post="/counter/lobby/{{ . }}/win" hx-swap="none">Win</button>
+            hx-post="/counter/lobby/{{ . }}/win" hx-target="#player-buttons" hx-swap="delete">Win</button>
         <button class="btn btn-danger col-6 rounded-3" type="button"
-            hx-post="/counter/lobby/{{ . }}/lose" hx-swap="none">Lose</button>
+            hx-post="/counter/lobby/{{ . }}/lose" hx-target="#player-buttons" hx-swap="delete">Lose</button>
     </div>
 </div>
 {{ end }}
@@ -89,5 +89,5 @@
 {{ end }}
 
 {{ define "lobby-player-leave-btn"}}
-    <button class="btn btn-outline-secondary mt-2 rounded-3" hx-post="/counter/lobby/{{ . }}/leave" hx-swap="none" type="button">Leave</button>
+    <button class="btn btn-outline-secondary mt-2 rounded-3" hx-post="/counter/lobby/{{ . }}/leave" hx-swap="delete" type="button">Leave</button>
 {{ end }}

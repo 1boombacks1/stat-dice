@@ -49,6 +49,9 @@ func GetUserByCredentials(ctx *appctx.AppCtx, login, password string) (*User, er
 	if err != nil {
 		return nil, err
 	}
+	if user == nil {
+		return nil, ErrUserNotFound
+	}
 
 	if !utils.CompareBcryptHash(ctx, user.HashedPassword, password) {
 		return nil, fmt.Errorf("invalid password for user %s", login)
@@ -99,10 +102,16 @@ func getUserByLogin(ctx *appctx.AppCtx, login string) (*User, error) {
 		Select("users.*, matches.*").
 		Joins("LEFT JOIN matches ON matches.user_id = users.id").
 		Joins("LEFT JOIN lobbies ON matches.lobby_id = lobbies.id").
-		Where("users.login = ? AND (lobbies.status IN ? OR matches.lobby_id IS NULL)",
-			login, []LobbyStatus{LOBBY_STATUS_OPEN, LOBBY_STATUS_PROCESSING, LOBBY_STATUS_RESULT}).
+		Where("users.login = ?", login).
 		Order("lobbies.created_at DESC").
 		First(&user).Error
+	// Select("users.*, matches.*").
+	// Joins("LEFT JOIN matches ON matches.user_id = users.id").
+	// Joins("LEFT JOIN lobbies ON matches.lobby_id = lobbies.id").
+	// Where("users.login = ? AND (lobbies.status IN ? OR matches.lobby_id IS NULL)",
+	// 	login, []LobbyStatus{LOBBY_STATUS_OPEN, LOBBY_STATUS_PROCESSING, LOBBY_STATUS_RESULT}).
+	// Order("lobbies.created_at DESC").
+	// First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -110,7 +119,7 @@ func getUserByLogin(ctx *appctx.AppCtx, login string) (*User, error) {
 		return nil, fmt.Errorf("getting user: %w", err)
 	}
 
-	if user.Match != nil && user.Match.Result != RESULT_STATUS_PLAYING {
+	if user.Match != nil && (user.Match.Result == RESULT_STATUS_LEAVE || user.Match.Lobby.Status == LOBBY_STATUS_CLOSED) {
 		user.Match = nil
 	}
 
@@ -163,14 +172,10 @@ func (u *User) Create(ctx *appctx.AppCtx) error {
 	return nil
 }
 
-func (u *User) CreateLobby(ctx *appctx.AppCtx, lobbyName, gameID string) (uuid.UUID, error) {
+func (u *User) CreateLobby(ctx *appctx.AppCtx, lobby *Lobby) (uuid.UUID, error) {
 	match := &Match{
-		User: u,
-		Lobby: &Lobby{
-			Name:   lobbyName,
-			Status: LOBBY_STATUS_OPEN,
-			GameID: uuid.MustParse(gameID),
-		},
+		User:   u,
+		Lobby:  lobby,
 		Result: RESULT_STATUS_PLAYING,
 		IsHost: true,
 	}

@@ -2,4 +2,7 @@ package models
 
 import "errors"
 
-var ErrNotFound = errors.New("no players found")
+var (
+	ErrPlayersNotFound = errors.New("no players found")
+	ErrUserNotFound    = errors.New("user not found")
+)
