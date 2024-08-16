@@ -11,6 +11,7 @@ import (
 	"github.com/1boombacks1/stat_dice/appctx"
 	"github.com/1boombacks1/stat_dice/config"
 	"github.com/1boombacks1/stat_dice/db"
+	"github.com/1boombacks1/stat_dice/models"
 	"github.com/rs/zerolog"
 )
 
@@ -40,6 +41,10 @@ func newApp(ctx context.Context, cfg *config.Config) (*App, error) {
 	err = db.SetMaxConnections(10)
 	if err != nil {
 		return nil, fmt.Errorf("setting db max connections: %w", err)
+	}
+
+	if err := models.AutoMigrateModels(&app.ctx); err != nil {
+		return nil, fmt.Errorf("migrating models: %w", err)
 	}
 
 	app.ctx.Log().Msg("app: created instance")

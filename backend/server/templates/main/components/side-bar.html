@@ -1,0 +1,23 @@
+{{ define "side-bar" }}
+<div id="side-bar" class="side-bar">
+    <div class="games">
+        <h2>Games</h2>
+        {{ range . }}
+            {{ template "game-link" . }}
+        {{ end }}
+        <a hx-get="/create-game" class="side-bar-link side-bar-create none">Create</a>
+    </div>
+    <div class="creator-info">
+        <p class="creator-name">D&D (Developed & Designed) by d0c (～￣▽￣)～</p>
+        <div class="social-networks">
+            <img src="/images/completed.svg" alt="github" class="contact-icon">
+            <img src="/images/completed.svg" alt="telegram" class="contact-icon">
+            <img src="/images/completed.svg" alt="instagram" class="contact-icon">
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ define "game-link" }}
+<a hx-get="/game?id={{ .ID }}" class="side-bar-link">{{ .Name }}</a>
+{{ end }}

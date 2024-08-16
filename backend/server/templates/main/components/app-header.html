@@ -1,15 +1,15 @@
-{{ define "header" }}
+{{ define "app-header" }}
 <nav class="header-nav">
     <div class="circle side-bar-button">
-        <img src="../images/exit.svg">
+        <img src="/images/exit.svg">
     </div>
     <h2 class="title">Stat-Dice</h2>
     <div class="loggout">
-        <p class="info-text">d0c</p>
-        <div class="loggout-btn">
+        <p class="info-text">{{ . }}</p>
+        <div class="loggout-btn" hx-get="/counter/logout">
             <div class="rectangle"></div>
             <div class="circle">
-                <img src="../images/exit.svg">
+                <img src="/images/exit.svg">
             </div>
         </div>
     </div>

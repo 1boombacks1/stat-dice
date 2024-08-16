@@ -8,7 +8,9 @@ import (
 
 	"github.com/1boombacks1/stat_dice/appctx"
 	"github.com/1boombacks1/stat_dice/models"
+	httpErrors "github.com/1boombacks1/stat_dice/server/http_errors"
 	"github.com/1boombacks1/stat_dice/server/templates"
+	"github.com/go-chi/render"
 )
 
 var authTmpl *template.Template
@@ -19,7 +21,7 @@ const (
 )
 
 func AuthPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
-	if err := authTmpl.ExecuteTemplate(w, "auth", nil); err != nil {
+	if err := authTmpl.Execute(w, nil); err != nil {
 		panic(fmt.Errorf("rendering template: %w", err))
 	}
 }
@@ -27,51 +29,56 @@ func AuthPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 func Login(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
-	if r.Header.Get("HX-Request") != "true" {
-		writeAuthError(w, signInErrElement, http.StatusBadRequest, errors.New("invalid request: not HTPX request"))
-		return
-	}
 	if r.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
-		writeAuthError(w, signInErrElement, http.StatusUnsupportedMediaType, errors.New("unsupport media type"))
+		httpErrors.ErrUnsupportedMediaType().SetElementID(signInErrElement).Execute(w, httpErrors.AuthErrTmplName, ctx.Error())
 		return
 	}
 
-	// login := r.FormValue("login")
-	// password := r.FormValue("password")
+	login := r.FormValue("login")
+	password := r.FormValue("password")
 
-	// user, err := models.GetUserByCredentials(ctx, login, password)
-	// if err != nil {
-	// 	writeAuthError(w, signInErrElement, http.StatusInternalServerError, fmt.Errorf("failed to get user: %w", err))
-	// 	return
-	// }
-	// if user == nil {
-	// 	writeAuthError(w, signInErrElement, http.StatusUnauthorized, errors.New("invalid credentials"))
-	// 	return
-	// }
+	user, err := models.GetUserByCredentials(ctx, login, password)
+	if err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("failed to get user: %w", err)).
+			SetElementID(signInErrElement).Execute(w, httpErrors.AuthErrTmplName, ctx.Error())
+		return
+	}
+	if user == nil {
+		httpErrors.ErrUnauthorized(errors.New("invalid credentials")).
+			SetElementID(signInErrElement).Execute(w, httpErrors.AuthErrTmplName, ctx.Error())
+		return
+	}
 
-	// token, err := user.GenerateJWT(ctx)
-	// if err != nil {
-	// 	writeAuthError(w, signInErrElement, http.StatusInternalServerError, fmt.Errorf("failed to generate token: %w", err))
-	// 	return
-	// }
+	token, err := user.GenerateJWT(ctx)
+	if err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("failed to generate token: %w", err)).
+			SetElementID(signInErrElement).Execute(w, httpErrors.AuthErrTmplName, ctx.Error())
+		return
+	}
 
-	// http.SetCookie(w, &http.Cookie{
-	// 	Name:  "token",
-	// 	Value: token,
-	// 	// Secure:   true,
-	// 	HttpOnly: true,
-	// })
+	http.SetCookie(w, &http.Cookie{
+		Path:  "/counter",
+		Name:  "token",
+		Value: token,
+		// Secure:   true, при HTTPS - включить
+		HttpOnly: true,
+	})
 
-	w.Header().Set("HX-Redirect", "/counter")
+	// w.Header().Set("HX-Redirect", "/counter")
+	w.Header().Set("Content-Type", "application/json")
+	render.DefaultResponder(w, r, render.M{
+		"token": token,
+	})
 }
 
 func Registration(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("HX-Request") != "true" {
-		writeAuthError(w, signUpErrElement, http.StatusBadRequest, errors.New("invalid request: not HTPX request"))
+		httpErrors.ErrBadRequest(errors.New("invalid request: not HTPX request")).
+			SetElementID(signUpErrElement).Execute(w, httpErrors.AuthErrTmplName, ctx.Error())
 		return
 	}
 	if r.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
-		writeAuthError(w, signUpErrElement, http.StatusUnsupportedMediaType, errors.New("unsupport media type"))
+		httpErrors.ErrUnsupportedMediaType().SetElementID(signUpErrElement).Execute(w, httpErrors.AuthErrTmplName, ctx.Error())
 		return
 	}
 
@@ -86,26 +93,12 @@ func Registration(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := user.Create(ctx); err != nil {
-		writeAuthError(w, signUpErrElement, http.StatusInternalServerError, fmt.Errorf("failed to create user: %w", err))
+		httpErrors.ErrInternalServer(fmt.Errorf("failed to create user: %w", err)).
+			SetElementID(signUpErrElement).Execute(w, httpErrors.AuthErrTmplName, ctx.Error())
 		return
 	}
 
 	fmt.Fprint(w, `<span id="success-label" class="success-text">☑️ Registration success!</span>`)
-}
-
-func writeAuthError(w http.ResponseWriter, elementID string, status int, err error) {
-	w.WriteHeader(status)
-
-	if err := authTmpl.ExecuteTemplate(w, "auth-err",
-		struct {
-			ElementID string
-			Error     string
-		}{
-			ElementID: elementID,
-			Error:     err.Error(),
-		}); err != nil {
-		panic("failed to EXECUTE auth-err-template: " + err.Error())
-	}
 }
 
 func init() {

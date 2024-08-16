@@ -1,0 +1,19 @@
+{{ define "main-page"}}
+    {{ template "html-header" }}
+
+    <div class="main">
+        {{ template "app-header" .Username }}
+
+        <div class="content" id="app-content">
+            {{ template "find-lobbies" . }}
+        </div>
+
+        {{ template "app-footer-menu" }}
+    </div>
+
+    <div id="error"></div>
+
+    {{ template "side-bar" .Games }}
+
+    {{ template "html-footer" }}
+{{ end}}

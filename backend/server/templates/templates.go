@@ -7,3 +7,6 @@ var Auth embed.FS
 
 //go:embed main
 var Main embed.FS
+
+//go:embed errors
+var Err embed.FS

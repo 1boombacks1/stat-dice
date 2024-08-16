@@ -9,6 +9,8 @@ import (
 	"github.com/1boombacks1/stat_dice/appctx"
 	"github.com/1boombacks1/stat_dice/utils"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )
 
@@ -19,6 +21,8 @@ type User struct {
 	Password       string `gorm:"-:all"`
 	HashedPassword string `gorm:"not null"`
 	Name           string `gorm:"not null"`
+
+	Match *Match `gorm:"-:migration"`
 }
 
 type UserJWTClaims struct {
@@ -27,6 +31,10 @@ type UserJWTClaims struct {
 }
 
 type userCtxKey struct{}
+
+func (u User) MarshalZerologObject(e *zerolog.Event) {
+	e.EmbedObject(u.Base).Str("login", u.Login).Str("name", u.Name).EmbedObject(u.Match)
+}
 
 func GetUsers(ctx *appctx.AppCtx) ([]User, error) {
 	var users []User
@@ -87,11 +95,23 @@ func getUserByLogin(ctx *appctx.AppCtx, login string) (*User, error) {
 	var user *User
 	// Take() ищет без сортировки, в отличии от First() или Last()
 	// Find() не возвращает ошибку ErrRecordNotFound. Принимает как одну струкутуру так и срез
-	if err := ctx.DB().Where("login = ?", login).Take(user).Error; err != nil {
+	err := ctx.DB().Preload("Match").Preload("Match.User").Preload("Match.Lobby").
+		Select("users.*, matches.*").
+		Joins("LEFT JOIN matches ON matches.user_id = users.id").
+		Joins("LEFT JOIN lobbies ON matches.lobby_id = lobbies.id").
+		Where("users.login = ? AND (lobbies.status IN ? OR matches.lobby_id IS NULL)",
+			login, []LobbyStatus{LOBBY_STATUS_OPEN, LOBBY_STATUS_PROCESSING, LOBBY_STATUS_RESULT}).
+		Order("lobbies.created_at DESC").
+		First(&user).Error
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("getting user: %w", err)
+	}
+
+	if user.Match != nil && user.Match.Result != RESULT_STATUS_PLAYING {
+		user.Match = nil
 	}
 
 	return user, nil
@@ -141,4 +161,31 @@ func (u *User) Create(ctx *appctx.AppCtx) error {
 	}
 
 	return nil
+}
+
+func (u *User) CreateLobby(ctx *appctx.AppCtx, lobbyName, gameID string) (uuid.UUID, error) {
+	match := &Match{
+		User: u,
+		Lobby: &Lobby{
+			Name:   lobbyName,
+			Status: LOBBY_STATUS_OPEN,
+			GameID: uuid.MustParse(gameID),
+		},
+		Result: RESULT_STATUS_PLAYING,
+		IsHost: true,
+	}
+
+	if err := match.Create(ctx); err != nil {
+		return uuid.UUID{}, fmt.Errorf("creating match: %w", err)
+	}
+	return match.LobbyID, nil
+}
+
+func (u *User) LeaveFromMatch(ctx *appctx.AppCtx) error {
+	if u.Match == nil {
+		return errors.New("user does not participate in match")
+	}
+
+	u.Match.Result = RESULT_STATUS_LEAVE
+	return u.Match.Update(ctx, []string{"Result"})
 }

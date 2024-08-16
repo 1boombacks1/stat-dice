@@ -1,25 +1,27 @@
-{{ define "footer-menu" }}
+{{ define "app-footer-menu" }}
 <div class="menu-nav">
-    <div class="menu-info-panel none">
+    {{ with .Match }}
+    <a href="/counter/lobby/{{ .LobbyID.String }}" class="menu-info-panel">
             <div class="curr-lobby-title">
                 <div class="curr-lobby-indicator"></div>
-                <span class="curr-lobby-name">lobby1</span>
+                <span class="curr-lobby-name">{{ .Lobby.Name }}</span>
             </div>
             <div class="curr-lobby-info">
-                <p class="">Players: 06</p>
-                <p class="curr-lobby-duration">20:58</p>
+                <p class="">Players: {{ .GetPlayerCount }}</p>
+                <p class="curr-lobby-duration">{{ .Lobby.GetCurrentDuration }}</p>
             </div>
-    </div>
+    </a>
+    {{ end }}
     <div class="menu-main-panel">
         <div class="menu-btn">
             <div class="menu-icon leader-icon deactivated"></div>
             <p class="menu-text">leaderboard</p>
         </div>
-        <div class="menu-btn" hx-get="/counter/create-lobby" hx-target="#app-content" hx-swap="innerHTML">
+        <div class="menu-btn" hx-get="/counter/create-lobby" hx-target="#app-content" hx-target-error="#error" hx-swap="innerHTML">
             <div class="menu-icon create-lobby-icon"></div>
             <p class="menu-text">create lobby</p>
         </div>
-        <div class="menu-btn" hx-get="/counter/find-lobbies" hx-target="#app-content" hx-swap="innerHTML">
+        <div class="menu-btn" hx-get="/counter/find-lobbies" hx-target="#app-content" hx-target-error="#error" hx-swap="innerHTML">
             <div class="menu-icon find-lobby-active-icon"></div>
             <p class="menu-text">find lobby</p>
         </div>

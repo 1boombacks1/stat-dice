@@ -16,7 +16,7 @@
 .host-end-buttons button:first-child {
     background-color: var(--color-purple);
     color: white;
-    border: 1px black solid;
+    /* border: 1px black solid; */
 }
 .find-lobby {
     width: 95%;
@@ -87,3 +87,15 @@ ul {
     box-shadow: 2px 3px black;
     font-size: var(--font-m-size);
 }
+
+.loading {
+    color: grey;
+    clip-path: inset(0 .7rem 0 0);
+    animation: l 1.25s steps(4) infinite;
+  }
+
+  @keyframes l {
+      to {
+        clip-path: inset(0 -.25rem 0 0)
+      }
+    }

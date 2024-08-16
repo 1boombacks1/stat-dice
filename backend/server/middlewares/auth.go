@@ -8,7 +8,7 @@ import (
 
 	"github.com/1boombacks1/stat_dice/appctx"
 	"github.com/1boombacks1/stat_dice/models"
-	"github.com/1boombacks1/stat_dice/server/httpErr"
+	httpErrors "github.com/1boombacks1/stat_dice/server/http_errors"
 	"github.com/go-chi/render"
 )
 
@@ -16,15 +16,34 @@ func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := appctx.FromContext(r.Context())
 
-		token, err := extractToken(r)
+		// token, err := extractToken(r)
+		// if err != nil {
+		// 	render.Render(w, r, httpErr.NewHTTPErrorWithExplanation(
+		// 		fmt.Errorf("failed to extract token: %w", err),
+		// 		http.StatusUnauthorized,
+		// 		fmt.Sprintf("failed to extract token: %v", err),
+		// 	))
+		// 	return
+		// }
+
+		cookie, err := r.Cookie("token")
 		if err != nil {
-			render.Render(w, r, httpErr.HTTPUnauthorized(fmt.Errorf("failed to get auth token: %w", err)))
+			if errors.Is(err, http.ErrNoCookie) {
+				render.Render(w, r, httpErrors.ErrUnauthorized(errors.New("cookie not found")))
+				return
+			}
+			render.Render(w, r, httpErrors.ErrUnauthorized(fmt.Errorf("failed to get cookie: %w", err)))
 			return
 		}
 
+		token := cookie.Value
 		user, err := models.GetUserByJWT(ctx, token)
 		if err != nil {
-			render.Render(w, r, httpErr.HTTPUnauthorized(fmt.Errorf("failed to get user: %w", err)))
+			render.Render(w, r, httpErrors.ErrUnauthorized(fmt.Errorf("failet to get user by JWT: %w", err)))
+			return
+		}
+		if user == nil {
+			render.Render(w, r, httpErrors.ErrUnauthorized(errors.New("invalid authorization token: user with this token not found")))
 			return
 		}
 

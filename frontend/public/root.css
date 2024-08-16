@@ -11,6 +11,7 @@ html {
     font-size: 16px;
 }
 body {
+    /* position: relative; */
     display: flex;
     flex-direction: column;
 }

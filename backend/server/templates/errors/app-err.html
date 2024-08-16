@@ -1,0 +1,11 @@
+{{ define "error-block" }}
+<div class="error-layer">
+    <div class="error-block">
+        <div class="error-info">
+            <p class="error-header">{{ .Title }}</p>
+            <p class="error-text">{{ .Explanation }}</p>
+        </div>
+        <a href="/counter" class="error-btn">main page</a>
+    </div>
+</div>
+{{ end }}

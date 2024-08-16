@@ -87,3 +87,15 @@ ul {
     box-shadow: 2px 3px black;
     font-size: var(--font-m-size);
 }
+
+.loading {
+    color: grey;
+  clip-path: inset(0 .7rem 0 0);
+  animation: l 1.2s steps(4) infinite;
+}
+
+@keyframes l {
+    to {
+      clip-path: inset(0 -.25rem 0 0)
+    }
+  }

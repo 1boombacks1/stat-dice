@@ -1,0 +1,93 @@
+{{ define "lobby" }}
+<div class="lobby-page">
+    <div class="m-3 d-flex flex-column bg-dark text-light text-center rounded-4">
+        <span class="fs-1 fw-semibold">{{ .LobbyInfo.Name }}</span>
+        <span class="pt-1 pb-2">
+            <span>Created At: </span>
+            <span>{{ .LobbyInfo.CreatedAt }}</span>
+        </span>
+    </div>
+    <ul class="list-group m-3 text-center" hx-get="/counter/lobby/{{ .LobbyInfo.ID }}/players" hx-trigger="every 2.5s">
+        {{ template "lobby-list" .ListInfo }}
+    </ul>
+
+    <div id="lobby-btns" class="d-flex flex-column me-2 ms-2 column-gap-1">
+        {{ if .IsHost }}
+            {{ if eq .LobbyInfo.Status 0 }}
+                {{ template "lobby-host-start-btns" .LobbyInfo.ID }}
+            {{ else if eq .LobbyInfo.Status 1 }}
+                {{ template "lobby-host-end-btns" .LobbyInfo.ID }}
+            {{ else }}
+                {{ template "lobby-player-btns" .LobbyInfo.ID }}
+            {{ end }}
+        {{ else }}
+            {{ if eq .LobbyInfo.Status 2 }}
+                {{ template "lobby-player-btns" .LobbyInfo.ID }}
+            {{ else }}
+                {{ template "lobby-player-waiting-btns" .LobbyInfo.ID }}
+            {{ end }}
+        {{ end }}
+    </div>
+</div>
+{{ end }}
+
+{{ define "lobby-list" }}
+    {{$CurrentPlayerID := .CurrentPlayerID}}
+    {{ range $Player := .Players }}
+        {{ if eq $Player.GetID $CurrentPlayerID }}
+        <li class="list-group-item d-flex justify-content-center list-group-item-secondary">
+            <span class="w-50 text-center">{{ $Player.Name }}</span>
+            <span class="w-50 text-center">{{ $Player.Match.Result.String }}</span>
+        </li>
+        {{ else }}
+        <li class="list-group-item d-flex justify-content-center">
+            <span class="w-50 text-center">{{ $Player.Name }}</span>
+            <span class="w-50 text-center">{{ $Player.Match.Result.String }}</span>
+        </li>
+        {{ end }}
+    {{ end }}
+    {{ if eq .LobbyStatus 0 }}
+        <li class="list-group-item"><span class="loading">Waiting players...</span></li>
+    {{ end }}
+{{ end }}
+
+{{ define "lobby-host-start-btns" }}
+<div class="host-start-buttons d-flex flex-row col-12 column-gap-1">
+    <button class="btn btn-success col-6 rounded-3" type="button"
+        hx-post="/counter/lobby/{{ . }}/start" hx-target="#lobby-btns">START</button>
+    <button class="btn btn-danger col-6 rounded-3" type="button"
+    hx-delete="/counter/lobby/{{ . }}">CANCEL</button>
+</div>
+{{ end }}
+
+{{ define "lobby-host-end-btns" }}
+<div class="host-end-buttons d-flex flex-row col-12 column-gap-2 justify-content-center">
+    <button class="btn col-5 rounded-3" type="button"
+        hx-post="/counter/lobby/{{ . }}/stop" hx-target="#lobby-btns">STOP GAME</button>
+    <button class="btn btn-secondary col-5 rounded-3" type="button"
+        hx-post="/counter/lobby/{{ . }}/leave">LEAVE</button>
+</div>
+{{ end }}
+
+{{ define "lobby-player-btns" }}
+<div class="player-buttons d-flex flex-column align-items-center column-gap-1">
+    <div class="d-flex flex-row col-12 column-gap-1">
+        <button class="btn btn-success col-6 rounded-3" type="button"
+            hx-post="/counter/lobby/{{ . }}/win" hx-swap="none">Win</button>
+        <button class="btn btn-danger col-6 rounded-3" type="button"
+            hx-post="/counter/lobby/{{ . }}/lose" hx-swap="none">Lose</button>
+    </div>
+</div>
+{{ end }}
+
+{{ define "lobby-player-waiting-btns" }}
+<div class="d-flex flex-column justify-content-center w-75 m-auto row-gap-2"
+    hx-get="/counter/lobby/{{ . }}/status" hx-target="#lobby-btns" hx-trigger="every 3s" hx-swap="none">
+    <p class="text-center">Кнопки победы/поражения появятся, когда хост завершит сессию</p>
+    {{ template "lobby-player-leave-btn" . }}
+</div>
+{{ end }}
+
+{{ define "lobby-player-leave-btn"}}
+    <button class="btn btn-outline-secondary mt-2 rounded-3" hx-post="/counter/lobby/{{ . }}/leave" hx-swap="none" type="button">Leave</button>
+{{ end }}

@@ -19,7 +19,7 @@ type Config struct {
 	JWTKey      string        `yaml:"jwt_key"`
 	JWTDuration time.Duration `yaml:"jwt_duration" default:"252h" help:"JWT expires duration - по дэфолту полторы недели"`
 
-	BcryptCost int `yaml:"bcrypt_cost" default:"42"`
+	BcryptCost int `yaml:"bcrypt_cost" default:"7"`
 }
 
 func MustParseYAML(path string, cfg *Config) {

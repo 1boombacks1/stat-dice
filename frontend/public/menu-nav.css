@@ -12,6 +12,8 @@
 }
 
 .menu-info-panel {
+  color: black;
+  text-decoration: none;
   width: 86%;
   left: 7%;
   right: 7%;

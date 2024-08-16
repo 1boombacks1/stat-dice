@@ -1,0 +1,19 @@
+{{ define "lobby-page"}}
+    {{ template "html-header" . }}
+
+    <div class="main">
+        {{ template "app-header" .Username }}
+
+        <div class="content" id="app-content">
+            {{ template "lobby" . }}
+        </div>
+
+        {{ template "app-footer-menu" .}}
+    </div>
+
+    <div id="error" class="none"></div>
+
+    {{ template "side-bar" .Games }}
+
+    {{ template "html-footer" }}
+{{ end}}

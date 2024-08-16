@@ -11,6 +11,7 @@ import (
 	"github.com/1boombacks1/stat_dice/appctx"
 	"github.com/1boombacks1/stat_dice/resources"
 	"github.com/1boombacks1/stat_dice/server/handlers"
+	"github.com/1boombacks1/stat_dice/server/middlewares"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -51,11 +52,34 @@ func (s *HTTPServer) initRoutes() {
 		s.DefineRoute(s.router, "GET", "/", handlers.AuthPage)
 		s.DefineRoute(s.router, "GET", "/login", handlers.AuthPage)
 
-		s.router.Route("/counter", func(r chi.Router) {
-			// r.Use(middlewares.Auth)
-			s.DefineRoute(r, "GET", "/", handlers.MainPage)
-			s.DefineRoute(r, "GET", "/create-lobby", handlers.CreateLobbyPage)
-			s.DefineRoute(r, "GET", "/find-lobbies", handlers.FindLobbies)
+		s.router.Route("/counter", func(appR chi.Router) {
+			appR.Use(middlewares.Auth)
+			s.DefineRoute(appR, "GET", "/", handlers.MainPage)
+			s.DefineRoute(appR, "GET", "/logout", handlers.Logout)
+
+			{
+				appR.Route("/lobby/{id}", func(lobbyR chi.Router) {
+					lobbyR.Use(middlewares.CheckAccessLobby)
+					s.DefineRoute(lobbyR, "GET", "/", handlers.LobbyPage)
+					s.DefineRoute(lobbyR, "GET", "/players", handlers.GetMatchPlayers)
+					s.DefineRoute(lobbyR, "GET", "/status", handlers.GetLobbyStatus)
+
+					s.DefineRoute(lobbyR, "POST", "/leave", handlers.LeaveLobby)
+					s.DefineRoute(lobbyR, "POST", "/win", handlers.WinMatch)
+					s.DefineRoute(lobbyR, "POST", "/lose", handlers.LoseMatch)
+
+					lobbyR.Group(func(hostR chi.Router) {
+						hostR.Use(middlewares.CheckIsHost)
+						s.DefineRoute(hostR, "POST", "/start", handlers.StartLobby)
+						s.DefineRoute(hostR, "POST", "/stop", handlers.StopLobby)
+						s.DefineRoute(hostR, "DELETE", "/", handlers.CancelLobby)
+					})
+				})
+			}
+
+			s.DefineRoute(appR, "POST", "/create-lobby", handlers.CreateLobby)
+			s.DefineRoute(appR, "GET", "/create-lobby", handlers.CreateLobbyContent)
+			s.DefineRoute(appR, "GET", "/find-lobbies", handlers.FindLobbies)
 		})
 	}
 
@@ -67,8 +91,8 @@ func (s *HTTPServer) initRoutes() {
 	}
 }
 
-func (s *HTTPServer) DefineRoute(rt chi.Router, method, path string, callback HTTPHandler) {
-	rt.MethodFunc(method, path, func(w http.ResponseWriter, r *http.Request) {
+func (s *HTTPServer) DefineRoute(r chi.Router, method, path string, callback HTTPHandler) {
+	r.MethodFunc(method, path, func(w http.ResponseWriter, r *http.Request) {
 		callback(s.ctx, w, r)
 	})
 }
