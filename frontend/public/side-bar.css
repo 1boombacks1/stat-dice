@@ -74,3 +74,16 @@
     font-size: var(--font-m-size);
 }
 
+.social-networks {
+    display: flex;
+    justify-content: space-between;
+}
+
+.social-networks a {
+    text-decoration: none;
+    color: black;
+}
+.social-networks img {
+    width: 5vh;
+    height: 5vh;
+}

@@ -36,5 +36,11 @@ func AutoMigrateModels(ctx *appctx.AppCtx) error {
 			return fmt.Errorf("migrating table: %T: %w", model, err)
 		}
 	}
+
+	if ctx.DB().Find(&Game{}).RowsAffected == 0 {
+		if err := ctx.DB().Create(&Game{Name: "Cosmic Encounter"}).Error; err != nil {
+			return fmt.Errorf("creating default game: %w", err)
+		}
+	}
 	return nil
 }
