@@ -1,68 +1,51 @@
 {{ define "find-lobbies" }}
-<div class="find-lobby">
-    <ul class="lobbies-list">
-        <li class="lobby-item">
-            <p class="lobby-item-header">Lobby1</p>
-            <table class="lobby-item-table">
-                <tr>
-                    <th class="lobby-item-table-header">Player Name</th>
-                    <th class="lobby-item-table-header">Winrate</th>
-                </tr>
-                <tr>
-                    <td class="lobby-item-table-row">d0c</td>
-                    <td class="lobby-item-table-row">100%</td>
-                </tr>
-                <tr>
-                    <td class="lobby-item-table-row">Ann</td>
-                    <td class="lobby-item-table-row">100%</td>
-                </tr>
-                <tr>
-                    <td class="lobby-item-table-row">nickname</td>
-                    <td class="lobby-item-table-row">100%</td>
-                </tr>
-            </table>
-            <div class="lobby-item-footer">
-                <div class="lobby-item-info">
-                    <p class="lobby-item-info-block">
-                        <span class="info-block-header">Date:</span>
-                        <span class="info-block-text">30.04.2024</span>
-                    </p>
-                    <p class="lobby-item-info-block">
-                        <span class="info-block-header">Players:</span>
-                        <span class="info-block-text">03</span>
-                    </p>
-                </div>
-                <button class="lobby-item-button">Join</button>
-            </div>
-        </li>
-        <li>
-            <div class="lobby-item">
-                <p class="lobby-item-header">Lobby2</p>
-                <table class="lobby-item-table">
-                    <tr>
-                        <th class="lobby-item-table-header">Player Name</th>
-                        <th class="lobby-item-table-header">Winrate</th>
-                    </tr>
-                    <tr>
-                        <td class="lobby-item-table-row">d0c</td>
-                        <td class="lobby-item-table-row">100%</td>
-                    </tr>
-                </table>
-                    <div class="lobby-item-footer">
-                    <div class="lobby-item-info">
-                        <p class="lobby-item-info-block">
-                            <span class="info-block-header">Date:</span>
-                            <span class="info-block-text">30.04.2024</span>
-                        </p>
-                        <p class="lobby-item-info-block">
-                            <span class="info-block-header">Players:</span>
-                            <span class="info-block-text">01</span>
-                        </p>
-                    </div>
-                    <button class="lobby-item-button">Join</button>
-                </div>
-            </div>
-        </li>
-    </ul>
+<div class="find-lobby" hx-get="/counter/open-lobbies" hx-trigger="every 2s">
+    <p class="lobby-item no-lobby-text">⌛ Происходит поиск...</p>
 </div>
+{{ end }}
+
+{{ define "lobbies-list" }}
+<ul class="lobbies-list">
+    {{ if . }}
+        {{ range $Lobby := . }}
+            {{ template "lobby-item" $Lobby }}
+        {{ end }}
+    {{ else }}
+        <li class="lobby-item">
+            <p class="no-lobby-text">😢 Пока нет свободных лобби</p>
+        </li>
+    {{ end }}
+</ul>
+{{ end }}
+
+{{ define "lobby-item" }}
+{{ $ctx := .Context }}
+<li class="lobby-item">
+    <p class="lobby-item-header">{{ .Name }}</p>
+    <table class="lobby-item-table">
+        <tr>
+            <th class="lobby-item-table-header">Player Name</th>
+            <th class="lobby-item-table-header">Winrate</th>
+        </tr>
+        {{ range $Player := .Players }}
+            <tr>
+                <td class="lobby-item-table-row">{{ $Player.Name }}</td>
+                <td class="lobby-item-table-row">{{ $Player.GetWinrate $ctx }}%</td>
+            </tr>
+        {{ end }}
+    </table>
+    <div class="lobby-item-footer">
+        <div class="lobby-item-info">
+            <p class="lobby-item-info-block">
+                <span class="info-block-header">Date:</span>
+                <span class="info-block-text">{{ .CreatedAt }}</span>
+            </p>
+            <p class="lobby-item-info-block">
+                <span class="info-block-header">Players:</span>
+                <span class="info-block-text">{{ .PlayersCount }}</span>
+            </p>
+        </div>
+        <button class="lobby-item-button" hx-get="/counter/{{ .ID }}/join">Join</button>
+    </div>
+</li>
 {{ end }}

@@ -36,11 +36,13 @@ func MainPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 			WindowName string
 			Games      []models.Game
 			Username   string
+			Match      *models.Match
 		}{
 			WindowName: "Find Lobby",
 			Games:      games,
 
 			Username: user.Name,
+			Match:    user.Match,
 		},
 	); err != nil {
 		panic(fmt.Errorf("rendering main page: %w", err))
@@ -74,12 +76,6 @@ func redirectToMainPage(w http.ResponseWriter) {
 
 func refreshPage(w http.ResponseWriter) {
 	w.Header().Set("HX-Refresh", "true")
-}
-
-func FindLobbies(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
-	if err := appTmpl.ExecuteTemplate(w, "find-lobbies", nil); err != nil {
-		panic(fmt.Errorf("rendering main page: %w", err))
-	}
 }
 
 func init() {

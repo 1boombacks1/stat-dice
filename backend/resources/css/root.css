@@ -39,8 +39,8 @@ body {
     --color-darken: rgb(29, 29, 29);
     --font-extra-bold: 'Orbitron-ExtraBold', monospace;
     --font-semi-bold: 'Orbitron-SemiBold', monospace;
-    --font-regular: 'Orbitron-SemiBold', monospace;
-    --font-light-cyrillic: 'Orbitron-SemiBold', monospace;
+    --font-regular: 'Orbitron-Medium', monospace;
+    --font-light-cyrillic: 'Orbitron-Light-Cyrillic', monospace;
     --font-xxl-size: 2rem;
     --font-xl-size: 1.5rem;
     --font-l-size: 1.25rem;

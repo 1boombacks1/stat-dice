@@ -31,6 +31,18 @@ func (m Match) GetPlayerCount() string {
 	return fmt.Sprintf("%02d", m.PlayerCount)
 }
 
+// Get open matches. Match preloaded Lobby field.
+func GetOpenMatches(ctx *appctx.AppCtx) ([]*Match, error) {
+	var matches []*Match
+	err := ctx.DB().Model(&Match{}).Preload("Lobby").
+		Joins("JOIN lobbies ON matches.lobby_id = lobbies.id").
+		Where("lobbies.status = ?", LOBBY_STATUS_OPEN).
+		Distinct("lobby_id").Find(&matches).Error
+
+	return matches, err
+}
+
+// Get players from match. Player preloaded Match field.
 func (m *Match) GetPlayers(db *gorm.DB) ([]*User, error) {
 	var players []*User
 	if err := db.Model(&User{}).Preload("Match").

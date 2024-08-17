@@ -194,3 +194,21 @@ func (u *User) LeaveFromMatch(ctx *appctx.AppCtx) error {
 	u.Match.Result = RESULT_STATUS_LEAVE
 	return u.Match.Update(ctx, []string{"Result"})
 }
+
+func (u *User) GetWinrate(ctx *appctx.AppCtx) string {
+	var winrate float64
+	err := ctx.DB().Model(&Match{}).
+		Select("COALESCE((SUM(CASE WHEN result = ? THEN 1 ELSE 0 END) * 100.0) / COUNT(*), 0) AS winrate", RESULT_STATUS_WIN).
+		Joins("JOIN lobbies on matches.lobby_id = lobbies.id").
+		Where("user_id = ? and lobbies.status != ?", u.ID, LOBBY_STATUS_OPEN).
+		Scan(&winrate).Error
+	if err != nil {
+		ctx.Error().Err(fmt.Errorf("getting winrate: %w", err)).Send()
+		return "err"
+	}
+
+	if winrate == 0 {
+		return "0"
+	}
+	return fmt.Sprintf("%.2f", winrate)
+}

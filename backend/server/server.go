@@ -79,7 +79,9 @@ func (s *HTTPServer) initRoutes() {
 
 			s.DefineRoute(appR, "POST", "/create-lobby", handlers.CreateLobby)
 			s.DefineRoute(appR, "GET", "/create-lobby", handlers.CreateLobbyContent)
-			s.DefineRoute(appR, "GET", "/find-lobbies", handlers.FindLobbies)
+			s.DefineRoute(appR, "GET", "/find-lobbies", handlers.FindLobbiesContent)
+			s.DefineRoute(appR, "GET", "/open-lobbies", handlers.GetOpenMatches)
+			s.DefineRoute(appR, "GET", "/{id}/join", handlers.JoinLobby)
 		})
 	}
 
