@@ -28,7 +28,7 @@ func LobbyPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 
 	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
 
-	players, err := user.Match.Lobby.GetPlayersWithMatchInfo(ctx)
+	players, err := user.Match.Lobby.GetPlayersWithMatch(ctx)
 	if err != nil {
 		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("getting players: %w", err)))
 		return
@@ -41,33 +41,37 @@ func LobbyPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 		Status    models.LobbyStatus
 	}
 
+	lobby := user.Match.Lobby
+
 	if err := appTmpl.ExecuteTemplate(w, "lobby-page",
 		struct {
+			AppName    string
 			WindowName string
-			Games      []models.Game
 			Username   string
+			Games      []models.Game
 
 			IsHost    bool
 			Match     *models.Match
 			LobbyInfo LobbyInfo
 			ListInfo  listInfo
 		}{
-			WindowName: "Lobby",
-			Games:      games,
+			AppName:    ctx.Config().AppName,
+			WindowName: "Lobby " + lobby.Name,
 			Username:   user.Name,
+			Games:      games,
 
 			Match:  user.Match,
 			IsHost: user.Match.IsHost,
 			LobbyInfo: LobbyInfo{
-				ID:        user.Match.Lobby.GetID(),
-				Name:      user.Match.Lobby.Name,
-				CreatedAt: user.Match.Lobby.GetCreatedAt(),
-				Status:    user.Match.Lobby.Status,
+				ID:        lobby.GetID(),
+				Name:      lobby.Name,
+				CreatedAt: lobby.GetCreatedAt(),
+				Status:    lobby.Status,
 			},
 			ListInfo: listInfo{
 				Players:         players,
 				CurrentPlayerID: user.GetID(),
-				LobbyStatus:     user.Match.Lobby.Status,
+				LobbyStatus:     lobby.Status,
 			},
 		},
 	); err != nil {
@@ -81,7 +85,7 @@ func CreateLobbyContent(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func GetMatchPlayers(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
+func GetLobbyPlayers(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
 
 	lobbyIDParam := chi.URLParam(r, "id")
@@ -98,15 +102,12 @@ func GetMatchPlayers(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	players, err := lobby.GetPlayersWithMatchInfo(ctx)
+	players, err := lobby.GetPlayersWithMatch(ctx)
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("getting players: %w", err)).SetTitle("DB Error").
 			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
 		return
 	}
-
-	fmt.Println("players", players)
-	fmt.Println("lobby", lobby)
 
 	data := listInfo{
 		Players:         players,
@@ -230,7 +231,7 @@ func LeaveLobby(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	players, err := user.Match.Lobby.GetPlayersWithMatchInfo(ctx)
+	players, err := user.Match.Lobby.GetPlayersWithMatch(ctx)
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("getting players: %w", err)).SetTitle("DB Error").
 			Execute(w, httpErrors.AppErrTmplName, ctx.Error())

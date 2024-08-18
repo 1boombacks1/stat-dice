@@ -9,6 +9,9 @@
 }
 
 .side-bar-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-left: 3vw;
     width: var(--header-circle-size);
     height: var(--header-circle-size);

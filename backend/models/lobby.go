@@ -59,13 +59,12 @@ func GetOpenLobbies(ctx *appctx.AppCtx) ([]*Lobby, error) {
 	return lobbies, nil
 }
 
-func (l *Lobby) GetPlayersWithMatchInfo(ctx *appctx.AppCtx) ([]*User, error) {
+func (l *Lobby) GetPlayersWithMatch(ctx *appctx.AppCtx) ([]*User, error) {
 	var players []*User
 	if err := ctx.DB().Model(&User{}).Preload("Match").
 		Joins("JOIN matches on matches.user_id = users.id").
 		Joins("JOIN lobbies on matches.lobby_id = lobbies.id").
 		Where("lobbies.id = ?", l.ID).
-		// Where("lobbies.status IN ?", []LobbyStatus{LOBBY_STATUS_OPEN, LOBBY_STATUS_PROCESSING, LOBBY_STATUS_RESULT}).
 		Find(&players).Error; err != nil {
 		return nil, fmt.Errorf("getting players: %w", err)
 	}

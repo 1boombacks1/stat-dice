@@ -17,7 +17,7 @@
                 {{ template "lobby-host-start-btns" .LobbyInfo.ID }}
             {{ else if eq .LobbyInfo.Status 1 }}
                 {{ template "lobby-host-end-btns" .LobbyInfo.ID }}
-            {{ else }}
+            {{ else if eq .LobbyInfo.Status 2 }}
                 {{ template "lobby-player-btns" .LobbyInfo.ID }}
             {{ end }}
         {{ else }}

@@ -31,35 +31,6 @@ func (m Match) GetPlayerCount() string {
 	return fmt.Sprintf("%02d", m.PlayerCount)
 }
 
-// Get open matches. Match preloaded Lobby field.
-// func GetOpenMatches(ctx *appctx.AppCtx) ([]*Match, error) {
-// 	var matches []*Match
-// 	err := ctx.DB().Model(&Match{}).Preload("Lobby").
-// 		Joins("JOIN lobbies ON matches.lobby_id = lobbies.id").
-// 		Where("lobbies.status = ?", LOBBY_STATUS_OPEN).
-// 		Distinct("lobby_id").Find(&matches).Error
-
-// 	return matches, err
-// }
-
-// Get players from match. Player preloaded Match field.
-// func (m *Match) GetPlayers(db *gorm.DB) ([]*User, error) {
-// 	var players []*User
-// 	if err := db.Model(&User{}).Preload("Match").
-// 		Joins("JOIN matches on matches.user_id = users.id").
-// 		Joins("JOIN lobbies on matches.lobby_id = lobbies.id").
-// 		Where("lobbies.status IN ?", []LobbyStatus{LOBBY_STATUS_OPEN, LOBBY_STATUS_PROCESSING, LOBBY_STATUS_RESULT}).
-// 		Find(&players).Error; err != nil {
-// 		return nil, fmt.Errorf("getting players: %w", err)
-// 	}
-// 	if len(players) == 0 {
-// 		return nil, ErrPlayersNotFound
-// 	}
-
-// 	m.PlayerCount = len(players)
-// 	return players, nil
-// }
-
 func (m *Match) SwapHost(ctx *appctx.AppCtx, newHost *User) error {
 	err := ctx.DB().Transaction(func(tx *gorm.DB) error {
 		err := tx.Model(m).Select("IsHost", "Result").Updates(&Match{Result: RESULT_STATUS_LEAVE, IsHost: false}).Error

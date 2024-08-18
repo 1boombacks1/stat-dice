@@ -1,11 +1,11 @@
 {{ define "app-header" }}
 <nav class="header-nav">
     <div class="circle side-bar-button">
-        <img src="/images/exit.svg">
+        <img src="/images/menu.png">
     </div>
-    <h2 class="title">Stat-Dice</h2>
+    <h2 class="title">{{ .AppName }}</h2>
     <div class="loggout">
-        <p class="info-text">{{ . }}</p>
+        <p class="info-text">{{ .Username }}</p>
         <div class="loggout-btn" hx-get="/counter/logout">
             <div class="rectangle"></div>
             <div class="circle">

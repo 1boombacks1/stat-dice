@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -27,18 +28,23 @@ func MainPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 			// Secure:   true, при HTTPS - включить
 			HttpOnly: true,
 		})
+	} else {
+		render.Render(w, r, httpErrors.ErrInternalServer(errors.New("админ забыл добавить игры. Напишите сюда t.me/boombacks")))
+		return
 	}
 
 	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
 
 	if err := appTmpl.ExecuteTemplate(w, "main-page",
 		struct {
+			AppName    string
 			WindowName string
 			Games      []models.Game
 			Username   string
 			Match      *models.Match
 		}{
-			WindowName: "Find Lobby",
+			AppName:    ctx.Config().AppName,
+			WindowName: ctx.Config().AppName,
 			Games:      games,
 
 			Username: user.Name,

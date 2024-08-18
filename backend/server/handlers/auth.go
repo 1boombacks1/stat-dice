@@ -91,6 +91,12 @@ func Registration(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	nickname := r.FormValue("nickname")
 	login := r.FormValue("login")
 	password := r.FormValue("password")
+	password2 := r.FormValue("repeat-password")
+	if password != password2 {
+		httpErrors.ErrBadRequest(errors.New("passwords don't match")).WithExplanation("Пароли не совпадают").
+			SetElementID(signUpErrElement).Execute(w, httpErrors.AuthErrTmplName, ctx.Error())
+		return
+	}
 
 	user := models.User{
 		Name:     nickname,

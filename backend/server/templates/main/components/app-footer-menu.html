@@ -14,19 +14,19 @@
     {{ end }}
     <div class="menu-main-panel">
         <div class="menu-btn">
-            <div class="menu-icon leader-icon deactivated"></div>
+            <div id="leader-menu-icon" class="menu-icon leader-icon deactivated"></div>
             <p class="menu-text">leaderboard</p>
         </div>
         <div class="menu-btn" hx-get="/counter/create-lobby" hx-target="#app-content" hx-target-error="#error" hx-swap="innerHTML">
-            <div class="menu-icon create-lobby-icon"></div>
+            <div id="create-menu-icon" class="menu-icon create-lobby-icon"></div>
             <p class="menu-text">create lobby</p>
         </div>
         <div class="menu-btn" hx-get="/counter/find-lobbies" hx-target="#app-content" hx-target-error="#error" hx-swap="innerHTML">
-            <div class="menu-icon find-lobby-active-icon"></div>
+            <div id="find-menu-icon" class="menu-icon find-lobby-active-icon"></div>
             <p class="menu-text">find lobby</p>
         </div>
         <div class="menu-btn">
-            <div class="menu-icon completed-icon deactivated"></div>
+            <div id="completed-menu-icon" class="menu-icon completed-icon deactivated"></div>
             <p class="menu-text">completed</p>
         </div>
     </div>

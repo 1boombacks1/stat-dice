@@ -28,7 +28,7 @@ func NewHTTPServer(ctx *appctx.AppCtx) *HTTPServer {
 	server := &HTTPServer{
 		router: mux,
 		Server: http.Server{
-			Addr:    ctx.Config().Address + ":" + strconv.FormatUint(uint64(ctx.Config().Port), 10),
+			Addr:    ctx.Config().Host + ":" + strconv.FormatUint(uint64(ctx.Config().Port), 10),
 			Handler: mux,
 			BaseContext: func(net.Listener) context.Context {
 				return ctx
@@ -59,7 +59,7 @@ func (s *HTTPServer) initRoutes() {
 
 			{
 				appR.Route("/lobby/{id}", func(lobbyR chi.Router) {
-					s.DefineRoute(lobbyR, "GET", "/players", handlers.GetMatchPlayers)
+					s.DefineRoute(lobbyR, "GET", "/players", handlers.GetLobbyPlayers)
 					s.DefineRoute(lobbyR, "GET", "/status", handlers.GetLobbyStatus)
 
 					lobbyR.Group(func(playersR chi.Router) {

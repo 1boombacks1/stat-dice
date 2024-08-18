@@ -31,7 +31,7 @@ func Execute() {
 
 func (c *CLI) Run() error {
 	return app.WithApp(&c.Config, func(ctx *appctx.AppCtx) error {
-		ctx.Log().Str("addr", ctx.Config().Address).Uint16("port", ctx.Config().Port).Msg("serving app")
+		ctx.Log().Str("addr", ctx.Config().Host).Uint16("port", ctx.Config().Port).Msg("serving app")
 
 		srv := server.NewHTTPServer(ctx)
 		defer srv.Stop()
