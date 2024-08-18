@@ -8,6 +8,7 @@ import (
 	"github.com/1boombacks1/stat_dice/appctx"
 	"github.com/1boombacks1/stat_dice/models"
 	httpErrors "github.com/1boombacks1/stat_dice/server/http_errors"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/google/uuid"
 )
@@ -27,7 +28,7 @@ func LobbyPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 
 	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
 
-	players, err := user.Match.GetPlayers(ctx.DB().DB)
+	players, err := user.Match.Lobby.GetPlayersWithMatchInfo(ctx)
 	if err != nil {
 		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("getting players: %w", err)))
 		return
@@ -83,17 +84,34 @@ func CreateLobbyContent(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Reque
 func GetMatchPlayers(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
 
-	players, err := user.Match.GetPlayers(ctx.DB().DB)
+	lobbyIDParam := chi.URLParam(r, "id")
+	lobbyID, err := uuid.Parse(lobbyIDParam)
+	if err != nil {
+		httpErrors.ErrBadRequest(errors.New("invalid lobby id")).SetTitle("Invalid Lobby ID").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		return
+	}
+
+	lobby, err := models.GetLobbyByID(ctx, lobbyID)
+	if err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("getting lobby: %w", err)).SetTitle("DB Error").
+			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		return
+	}
+
+	players, err := lobby.GetPlayersWithMatchInfo(ctx)
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("getting players: %w", err)).SetTitle("DB Error").
 			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
 		return
 	}
 
+	fmt.Println("players", players)
+	fmt.Println("lobby", lobby)
+
 	data := listInfo{
 		Players:         players,
 		CurrentPlayerID: user.GetID(),
-		LobbyStatus:     user.Match.Lobby.Status,
+		LobbyStatus:     lobby.Status,
 	}
 
 	if err := appTmpl.ExecuteTemplate(w, "lobby-list", data); err != nil {
@@ -107,7 +125,7 @@ func GetLobbyStatus(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) 
 
 	if user.Match.Lobby.Status == models.LOBBY_STATUS_RESULT {
 		w.Header().Set("HX-Reswap", "innerHTML")
-		if err := appTmpl.ExecuteTemplate(w, "lobby-player-btns", nil); err != nil {
+		if err := appTmpl.ExecuteTemplate(w, "lobby-player-btns", user.Match.Lobby.GetID()); err != nil {
 			httpErrors.ErrInternalServer(fmt.Errorf("rendering lobby status: %w", err)).SetTitle("Template Error").
 				Execute(w, httpErrors.AppErrTmplName, ctx.Error())
 			return
@@ -212,7 +230,7 @@ func LeaveLobby(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	players, err := user.Match.GetPlayers(ctx.DB().DB)
+	players, err := user.Match.Lobby.GetPlayersWithMatchInfo(ctx)
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("getting players: %w", err)).SetTitle("DB Error").
 			Execute(w, httpErrors.AppErrTmplName, ctx.Error())

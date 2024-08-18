@@ -36,12 +36,16 @@ func (u User) MarshalZerologObject(e *zerolog.Event) {
 	e.EmbedObject(u.Base).Str("login", u.Login).Str("name", u.Name).EmbedObject(u.Match)
 }
 
-func GetUsers(ctx *appctx.AppCtx) ([]User, error) {
-	var users []User
-	if err := ctx.DB().Find(&users).Error; err != nil {
-		return nil, fmt.Errorf("getting users: %w", err)
+func GetPlayersByLobbyID(ctx *appctx.AppCtx, lobbyID uuid.UUID) ([]*User, error) {
+	var players []*User
+	if err := ctx.DB().Model(&User{}).Preload("Match").
+		Joins("JOIN matches on matches.user_id = users.id").
+		Joins("JOIN lobbies on matches.lobby_id = lobbies.id").
+		Where("lobbies.id = ?", lobbyID).
+		Find(&players).Error; err != nil {
+		return nil, fmt.Errorf("getting players: %w", err)
 	}
-	return users, nil
+	return players, nil
 }
 
 func GetUserByCredentials(ctx *appctx.AppCtx, login, password string) (*User, error) {
@@ -98,7 +102,7 @@ func getUserByLogin(ctx *appctx.AppCtx, login string) (*User, error) {
 	var user *User
 	// Take() ищет без сортировки, в отличии от First() или Last()
 	// Find() не возвращает ошибку ErrRecordNotFound. Принимает как одну струкутуру так и срез
-	err := ctx.DB().Preload("Match").Preload("Match.User").Preload("Match.Lobby").
+	err := ctx.DB().Preload("Match").Preload("Match.User").Preload("Match.Lobby").Preload("Match.Lobby.Players").
 		Select("users.*, matches.*").
 		Joins("LEFT JOIN matches ON matches.user_id = users.id").
 		Joins("LEFT JOIN lobbies ON matches.lobby_id = lobbies.id").

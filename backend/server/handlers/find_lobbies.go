@@ -21,10 +21,10 @@ func FindLobbiesContent(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func GetOpenMatches(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
-	matches, err := models.GetOpenMatches(ctx)
+func GetOpenLobbies(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
+	lobbies, err := models.GetOpenLobbies(ctx)
 	if err != nil {
-		err = fmt.Errorf("getting open matches: %w", err)
+		err = fmt.Errorf("getting open lobbies: %w", err)
 		httpErrors.ErrInternalServer(err).SetTitle("DB Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
 		ctx.Error().Err(err).Send()
 		return
@@ -39,26 +39,26 @@ func GetOpenMatches(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) 
 		Players      []*models.User
 	}
 
-	lobbies := make([]LobbyInfo, 0, len(matches))
-	for _, match := range matches {
-		players, err := match.GetPlayers(ctx.DB().DB)
-		if err != nil {
-			err = fmt.Errorf("getting players for match: %w", err)
-			httpErrors.ErrInternalServer(err).SetTitle("DB Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
-			ctx.Error().Err(err).Send()
-			return
-		}
-		lobbies = append(lobbies, LobbyInfo{
+	lobbiesInfo := make([]LobbyInfo, 0, len(lobbies))
+	for _, lobby := range lobbies {
+		// players, err := lobby.GetPlayersWithMatchInfo(ctx)
+		// if err != nil {
+		// 	err = fmt.Errorf("getting players for match: %w", err)
+		// 	httpErrors.ErrInternalServer(err).SetTitle("DB Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		// 	ctx.Error().Err(err).Send()
+		// 	return
+		// }
+		lobbiesInfo = append(lobbiesInfo, LobbyInfo{
 			Context:      ctx,
-			ID:           match.Lobby.GetID(),
-			Name:         match.Lobby.Name,
-			CreatedAt:    match.Lobby.GetCreatedAt(),
-			PlayersCount: match.GetPlayerCount(),
-			Players:      players,
+			ID:           lobby.GetID(),
+			Name:         lobby.Name,
+			CreatedAt:    lobby.GetCreatedAt(),
+			PlayersCount: lobby.GetPlayerCount(),
+			Players:      lobby.Players,
 		})
 	}
 
-	if err := appTmpl.ExecuteTemplate(w, "lobbies-list", lobbies); err != nil {
+	if err := appTmpl.ExecuteTemplate(w, "lobbies-list", lobbiesInfo); err != nil {
 		err = fmt.Errorf("rendering main page: %w", err)
 		httpErrors.ErrInternalServer(err).SetTitle("Template Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
 		ctx.Error().Err(err).Send()

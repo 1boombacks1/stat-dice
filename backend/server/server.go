@@ -59,14 +59,16 @@ func (s *HTTPServer) initRoutes() {
 
 			{
 				appR.Route("/lobby/{id}", func(lobbyR chi.Router) {
-					lobbyR.Use(middlewares.CheckAccessLobby)
-					s.DefineRoute(lobbyR, "GET", "/", handlers.LobbyPage)
 					s.DefineRoute(lobbyR, "GET", "/players", handlers.GetMatchPlayers)
 					s.DefineRoute(lobbyR, "GET", "/status", handlers.GetLobbyStatus)
 
-					s.DefineRoute(lobbyR, "POST", "/leave", handlers.LeaveLobby)
-					s.DefineRoute(lobbyR, "POST", "/win", handlers.WinMatch)
-					s.DefineRoute(lobbyR, "POST", "/lose", handlers.LoseMatch)
+					lobbyR.Group(func(playersR chi.Router) {
+						playersR.Use(middlewares.CheckAccessLobby)
+						s.DefineRoute(playersR, "GET", "/", handlers.LobbyPage)
+						// s.DefineRoute(playersR, "POST", "/leave", handlers.LeaveLobby)
+						s.DefineRoute(playersR, "POST", "/win", handlers.WinMatch)
+						s.DefineRoute(playersR, "POST", "/lose", handlers.LoseMatch)
+					})
 
 					lobbyR.Group(func(hostR chi.Router) {
 						hostR.Use(middlewares.CheckIsHost)
@@ -80,7 +82,7 @@ func (s *HTTPServer) initRoutes() {
 			s.DefineRoute(appR, "POST", "/create-lobby", handlers.CreateLobby)
 			s.DefineRoute(appR, "GET", "/create-lobby", handlers.CreateLobbyContent)
 			s.DefineRoute(appR, "GET", "/find-lobbies", handlers.FindLobbiesContent)
-			s.DefineRoute(appR, "GET", "/open-lobbies", handlers.GetOpenMatches)
+			s.DefineRoute(appR, "GET", "/open-lobbies", handlers.GetOpenLobbies)
 			s.DefineRoute(appR, "GET", "/{id}/join", handlers.JoinLobby)
 		})
 	}

@@ -19,6 +19,8 @@ type Lobby struct {
 	EndedAt       *time.Time
 	IsCompetitive bool `gorm:"not null;default:false"`
 
+	Players []*User `gorm:"many2many:matches;"`
+
 	GameID uuid.UUID `gorm:"type:uuid;not null"`
 	Game   Game
 }
@@ -35,6 +37,40 @@ func (l *Lobby) GetCurrentDuration() string {
 		return time.Since(*l.StartedAt).Truncate(time.Minute).String()
 	}
 	return l.EndedAt.Sub(*l.StartedAt).Truncate(time.Minute).String()
+}
+
+func (l *Lobby) GetPlayerCount() string {
+	return fmt.Sprintf("%02d", len(l.Players))
+}
+
+func GetLobbyByID(ctx *appctx.AppCtx, id uuid.UUID) (*Lobby, error) {
+	var lobby Lobby
+	if err := ctx.DB().Preload("Players").Preload("Game").First(&lobby, "id = ?", id).Error; err != nil {
+		return nil, fmt.Errorf("getting lobby: %w", err)
+	}
+	return &lobby, nil
+}
+
+func GetOpenLobbies(ctx *appctx.AppCtx) ([]*Lobby, error) {
+	var lobbies []*Lobby
+	if err := ctx.DB().Preload("Players").Where("status = ?", LOBBY_STATUS_OPEN).Find(&lobbies).Error; err != nil {
+		return nil, fmt.Errorf("getting lobbies: %w", err)
+	}
+	return lobbies, nil
+}
+
+func (l *Lobby) GetPlayersWithMatchInfo(ctx *appctx.AppCtx) ([]*User, error) {
+	var players []*User
+	if err := ctx.DB().Model(&User{}).Preload("Match").
+		Joins("JOIN matches on matches.user_id = users.id").
+		Joins("JOIN lobbies on matches.lobby_id = lobbies.id").
+		Where("lobbies.id = ?", l.ID).
+		// Where("lobbies.status IN ?", []LobbyStatus{LOBBY_STATUS_OPEN, LOBBY_STATUS_PROCESSING, LOBBY_STATUS_RESULT}).
+		Find(&players).Error; err != nil {
+		return nil, fmt.Errorf("getting players: %w", err)
+	}
+
+	return players, nil
 }
 
 func (l *Lobby) Start(db *gorm.DB) error {
