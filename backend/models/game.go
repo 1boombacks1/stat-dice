@@ -20,6 +20,14 @@ func GetGames(ctx *appctx.AppCtx) ([]Game, error) {
 	return games, nil
 }
 
+func GetGameByName(ctx *appctx.AppCtx, name string) (*Game, error) {
+	var game *Game
+	if err := ctx.DB().Where("name = ?", name).First(&game).Error; err != nil {
+		return nil, fmt.Errorf("getting game by name: %w", err)
+	}
+	return game, nil
+}
+
 func (g *Game) Create(ctx *appctx.AppCtx) error {
 	if err := ctx.DB().Create(g).Error; err != nil {
 		return fmt.Errorf("creating game: %w", err)

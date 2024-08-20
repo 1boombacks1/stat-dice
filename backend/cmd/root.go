@@ -15,22 +15,29 @@ import (
 )
 
 type CLI struct {
-	Path string `default:"config.yaml" help:"path to yaml config"`
 	config.Config
+
+	Game  GameCMD   `cmd:""`
+	Serve ServerCMD `cmd:"" default:"withargs" help:"serve http-server"`
 }
 
 func Execute() {
 	cli := &CLI{}
 
 	ctx := kong.Parse(cli, kong.Name("stat-dice"), kong.Description("web-service for work application 'stat-dice'"))
-	config.MustParseYAML(cli.Path, &cli.Config)
-
-	err := ctx.Run()
+	err := ctx.Run(&cli.Config)
 	ctx.FatalIfErrorf(err)
 }
 
-func (c *CLI) Run() error {
-	return app.WithApp(&c.Config, func(ctx *appctx.AppCtx) error {
+type ServerCMD struct {
+	Path string `default:"config.yaml" help:"path to yaml config"`
+}
+
+func (c *ServerCMD) Run(cfg *config.Config) error {
+	return app.WithApp(cfg, func(ctx *appctx.AppCtx) error {
+		// todo: без must
+		config.MustParseYAML(c.Path, cfg)
+
 		ctx.Log().Str("addr", ctx.Config().Host).Uint16("port", ctx.Config().Port).Msg("serving app")
 
 		srv := server.NewHTTPServer(ctx)

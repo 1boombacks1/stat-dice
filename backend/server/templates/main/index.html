@@ -1,14 +1,14 @@
-{{ define "lobby-page"}}
+{{ define "index" }}
     {{ template "html-header" . }}
 
     <div class="main">
         {{ template "app-header" . }}
 
         <div class="content" id="app-content">
-            {{ template "lobby" . }}
+            {{ template "find-lobbies" }}
         </div>
 
-        {{ template "app-footer-menu" .}}
+        {{ template "app-footer-menu" . }}
     </div>
 
     <div id="error"></div>
@@ -16,4 +16,4 @@
     {{ template "side-bar" .Games }}
 
     {{ template "html-footer" }}
-{{ end}}
+{{ end }}
