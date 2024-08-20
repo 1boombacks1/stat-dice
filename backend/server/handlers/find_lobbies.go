@@ -4,29 +4,30 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"text/template"
 
 	"github.com/1boombacks1/stat_dice/appctx"
 	"github.com/1boombacks1/stat_dice/models"
 	httpErrors "github.com/1boombacks1/stat_dice/server/http_errors"
+	"github.com/1boombacks1/stat_dice/server/templates"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/google/uuid"
 )
 
+var findLobbiesTmpl *template.Template
+
 func FindLobbiesContent(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
-	if err := appTmpl.ExecuteTemplate(w, "find-lobbies", nil); err != nil {
-		err = fmt.Errorf("rendering find-lobbies page: %w", err)
-		render.Render(w, r, httpErrors.ErrInternalServer(err))
-		ctx.Error().Err(err).Send()
+	if err := findLobbiesTmpl.ExecuteTemplate(w, "content", nil); err != nil {
+		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("rendering find-lobbies content: %w", err)).WithLog(ctx.Error()))
 	}
 }
 
 func GetOpenLobbies(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	lobbies, err := models.GetOpenLobbies(ctx)
 	if err != nil {
-		err = fmt.Errorf("getting open lobbies: %w", err)
-		httpErrors.ErrInternalServer(err).SetTitle("DB Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
-		ctx.Error().Err(err).Send()
+		httpErrors.ErrInternalServer(fmt.Errorf("getting open lobbies: %w", err)).WithLog(ctx.Error()).
+			SetTitle("DB Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
 		return
 	}
 
@@ -41,13 +42,6 @@ func GetOpenLobbies(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) 
 
 	lobbiesInfo := make([]LobbyInfo, 0, len(lobbies))
 	for _, lobby := range lobbies {
-		// players, err := lobby.GetPlayersWithMatchInfo(ctx)
-		// if err != nil {
-		// 	err = fmt.Errorf("getting players for match: %w", err)
-		// 	httpErrors.ErrInternalServer(err).SetTitle("DB Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
-		// 	ctx.Error().Err(err).Send()
-		// 	return
-		// }
 		lobbiesInfo = append(lobbiesInfo, LobbyInfo{
 			Context:      ctx,
 			ID:           lobby.GetID(),
@@ -58,10 +52,9 @@ func GetOpenLobbies(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) 
 		})
 	}
 
-	if err := appTmpl.ExecuteTemplate(w, "lobbies-list", lobbiesInfo); err != nil {
-		err = fmt.Errorf("rendering main page: %w", err)
-		httpErrors.ErrInternalServer(err).SetTitle("Template Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
-		ctx.Error().Err(err).Send()
+	if err := findLobbiesTmpl.ExecuteTemplate(w, "lobbies-list", lobbiesInfo); err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("rendering lobbies-list: %w", err)).WithLog(ctx.Error()).
+			SetTitle("Template Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
 	}
 }
 
@@ -76,10 +69,9 @@ func JoinLobby(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 
 	lobbyID, err := uuid.Parse(lobbyIDParam)
 	if err != nil {
-		err = fmt.Errorf("parsing lobby id: %w", err)
-		httpErrors.ErrBadRequest(err).SetTitle("Bad Request").
-			WithExplanation("Lobby id is invalid").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
-		ctx.Error().EmbedObject(user).Err(err).Msg("user can't join to lobby. failed to parse lobby id")
+		httpErrors.ErrBadRequest(fmt.Errorf("parsing lobby id: %w", err)).WithLog(ctx.Error()).
+			SetTitle("Bad Request").WithExplanation("Lobby id is invalid").
+			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
 		return
 	}
 
@@ -91,11 +83,18 @@ func JoinLobby(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := match.Create(ctx); err != nil {
-		err = fmt.Errorf("creating match: %w", err)
-		httpErrors.ErrInternalServer(err).SetTitle("DB Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
-		ctx.Error().EmbedObject(user).Err(err).Msg("user can't join to lobby. failed to create match")
+		httpErrors.ErrInternalServer(fmt.Errorf("creating match: %w", err)).SetTitle("DB Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		ctx.Error().EmbedObject(user).Err(fmt.Errorf("creating match: %w", err)).Msg("user can't join to lobby. failed to create match")
 		return
 	}
 
 	redirectTo(w, "/counter/lobby/"+lobbyID.String())
+}
+
+func init() {
+	var err error
+	findLobbiesTmpl, err = templates.FIND_LOBBY_CONTENT.GetTemplate()
+	if err != nil {
+		panic(fmt.Errorf("failed to get FIND_LOBBY template: %w", err))
+	}
 }

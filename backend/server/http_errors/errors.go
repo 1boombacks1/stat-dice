@@ -44,6 +44,11 @@ func (e *ErrResponse) WithExplanation(explanation string) *ErrResponse {
 	return e
 }
 
+func (e *ErrResponse) WithLog(logger *zerolog.Event) *ErrResponse {
+	logger.Err(e.err).Send()
+	return e
+}
+
 func (e *ErrResponse) SetElementID(id string) *ErrResponse {
 	e.ElementID = id
 	return e

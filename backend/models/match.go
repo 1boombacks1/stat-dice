@@ -19,16 +19,10 @@ type Match struct {
 
 	Result ResultStatus `gorm:"not null"`
 	IsHost bool         `gorm:"not null;default:false"`
-
-	PlayerCount int `gorm:"-:all"`
 }
 
 func (m Match) MarshalZerologObject(e *zerolog.Event) {
 	e.EmbedObject(m.Lobby).EmbedObject(m.User).Str("user_result_status", m.Result.String()).Bool("is_host", m.IsHost)
-}
-
-func (m Match) GetPlayerCount() string {
-	return fmt.Sprintf("%02d", m.PlayerCount)
 }
 
 func (m *Match) SwapHost(ctx *appctx.AppCtx, newHost *User) error {

@@ -13,9 +13,9 @@ import (
 	"github.com/go-chi/render"
 )
 
-var appTmpl *template.Template
+var baseTmpl *template.Template
 
-func MainPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
+func Index(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	games, err := models.GetGames(ctx)
 	if err != nil {
 		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("getting games: %w", err)))
@@ -35,7 +35,13 @@ func MainPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 
 	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
 
-	if err := appTmpl.ExecuteTemplate(w, "main-page",
+	index, err := prepareIndexTemplate(ctx.Config().StartPage)
+	if err != nil {
+		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("preparing index template: %w", err)).WithLog(ctx.Error()))
+		return
+	}
+
+	if err := index.ExecuteTemplate(w, "index",
 		struct {
 			AppName    string
 			WindowName string
@@ -51,8 +57,27 @@ func MainPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 			Match:    user.Match,
 		},
 	); err != nil {
-		panic(fmt.Errorf("rendering main page: %w", err))
+		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("rendering main page: %w", err)).WithLog(ctx.Error()))
 	}
+}
+
+func prepareIndexTemplate(startPage templates.PageContent) (*template.Template, error) {
+	startTmpl, err := startPage.GetTemplate()
+	if err != nil {
+		return nil, fmt.Errorf("getting template: %w", err)
+	}
+
+	tmpl, err := baseTmpl.Clone()
+	if err != nil {
+		return nil, fmt.Errorf("cloning template: %w", err)
+	}
+
+	_, err = tmpl.AddParseTree("content", startTmpl.Lookup("content").Tree)
+	if err != nil {
+		return nil, fmt.Errorf("adding tree: %w", err)
+	}
+
+	return tmpl, nil
 }
 
 func Logout(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
@@ -85,10 +110,11 @@ func refreshPage(w http.ResponseWriter) {
 }
 
 func init() {
-	appTmpl = template.Must(template.ParseFS(templates.Main,
+	baseTmpl = template.Must(template.ParseFS(templates.Main,
+		"main/base.html",
 		"main/root/*.html",
-		"main/pages/*.html",
-		"main/sections/*.html",
 		"main/components/*.html",
+		// "main/pages/*.html",
+		// "main/sections/*.html",
 	))
 }

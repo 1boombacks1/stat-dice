@@ -54,7 +54,7 @@ func (s *HTTPServer) initRoutes() {
 
 		s.router.Route("/counter", func(appR chi.Router) {
 			appR.Use(middlewares.Auth)
-			s.DefineRoute(appR, "GET", "/", handlers.MainPage)
+			s.DefineRoute(appR, "GET", "/", handlers.Index)
 			s.DefineRoute(appR, "GET", "/logout", handlers.Logout)
 
 			{

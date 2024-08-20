@@ -1,4 +1,4 @@
-{{ define "create-lobby" }}
+{{ block "content" . }}
 <div class="create-lobby">
     <form class="lobby-form" hx-post="/counter/create-lobby">
         <input class="lobby-input" name="lobby-name" type="text" placeholder="lobby name" required/>

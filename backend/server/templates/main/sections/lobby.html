@@ -1,4 +1,4 @@
-{{ define "lobby" }}
+{{ block "content" . }}
 <div class="lobby-page">
     <div class="m-3 d-flex flex-column bg-dark text-light text-center rounded-4">
         <span class="fs-1 fw-semibold">{{ .LobbyInfo.Name }}</span>
@@ -7,8 +7,8 @@
             <span>{{ .LobbyInfo.CreatedAt }}</span>
         </span>
     </div>
-    <ul class="list-group m-3 text-center" hx-get="/counter/lobby/{{ .LobbyInfo.ID }}/players" hx-trigger="every 2.5s">
-        {{ template "lobby-list" .ListInfo }}
+    <ul class="list-group m-3 text-center" hx-get="/counter/lobby/{{ .LobbyInfo.ID }}/players" hx-trigger="load, every 2.5s">
+        <li class="list-group-item"><span class="loading">Loading...</span></li>
     </ul>
 
     <div id="lobby-btns" class="d-flex flex-column me-2 ms-2 column-gap-1">
@@ -31,13 +31,19 @@
 </div>
 {{ end }}
 
-{{ define "lobby-list" }}
+{{ define "lobby-players-list" }}
     {{$CurrentPlayerID := .CurrentPlayerID}}
     {{ range $Player := .Players }}
         {{ if eq $Player.GetID $CurrentPlayerID }}
         <li class="list-group-item d-flex justify-content-center list-group-item-secondary">
             <span class="w-50 text-center">{{ $Player.Name }}</span>
-            <span class="w-50 text-center">{{ $Player.Match.Result.String }}</span>
+            {{ if eq $Player.Match.Result 0 }}
+                <span class="w-50 text-center" style="color: green;">{{ $Player.Match.Result.String }}</span>
+            {{ else if eq $Player.Match.Result 1 }}
+                <span class="w-50 text-center" style="color: red;">{{ $Player.Match.Result.String }}</span>
+            {{ else }}
+                <span class="w-50 text-center">{{ $Player.Match.Result.String }}</span>
+            {{ end }}
         </li>
         {{ else }}
         <li class="list-group-item d-flex justify-content-center">

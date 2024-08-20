@@ -1,4 +1,4 @@
-{{ define "find-lobbies" }}
+{{ block "content" . }}
 <div class="find-lobby" hx-get="/counter/open-lobbies" hx-trigger="every 2s">
     <p class="lobby-item no-lobby-text">⌛ Происходит поиск...</p>
 </div>
