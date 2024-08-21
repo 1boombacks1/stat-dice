@@ -37,13 +37,7 @@
         {{ if eq $Player.GetID $CurrentPlayerID }}
         <li class="list-group-item d-flex justify-content-center list-group-item-secondary">
             <span class="w-50 text-center">{{ $Player.Name }}</span>
-            {{ if eq $Player.Match.Result 0 }}
-                <span class="w-50 text-center" style="color: green;">{{ $Player.Match.Result.String }}</span>
-            {{ else if eq $Player.Match.Result 1 }}
-                <span class="w-50 text-center" style="color: red;">{{ $Player.Match.Result.String }}</span>
-            {{ else }}
-                <span class="w-50 text-center">{{ $Player.Match.Result.String }}</span>
-            {{ end }}
+            {{ renderPlayerResult $Player.Match.Result }}
         </li>
         {{ else }}
         <li class="list-group-item d-flex justify-content-center">
@@ -79,9 +73,9 @@
 <div id="player-buttons" class="player-buttons d-flex flex-column align-items-center column-gap-1">
     <div class="d-flex flex-row col-12 column-gap-1">
         <button class="btn btn-success col-6 rounded-3" type="button"
-            hx-post="/counter/lobby/{{ . }}/win" hx-target="#player-buttons" hx-swap="delete">Win</button>
+            hx-post="/counter/lobby/{{ . }}/win" hx-target="#player-buttons" hx-swap="innerHTML">Win</button>
         <button class="btn btn-danger col-6 rounded-3" type="button"
-            hx-post="/counter/lobby/{{ . }}/lose" hx-target="#player-buttons" hx-swap="delete">Lose</button>
+            hx-post="/counter/lobby/{{ . }}/lose" hx-target="#player-buttons" hx-swap="innerHTML">Lose</button>
     </div>
 </div>
 {{ end }}

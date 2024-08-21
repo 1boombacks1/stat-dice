@@ -289,7 +289,12 @@ func WinMatch(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	if err := renderBackBtn(w); err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("executing template: %w", err)).WithLog(ctx.Error()).
+			SetTitle("Template Error").
+			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		return
+	}
 }
 
 func LoseMatch(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
@@ -303,12 +308,43 @@ func LoseMatch(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	if err := renderBackBtn(w); err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("executing template: %w", err)).WithLog(ctx.Error()).
+			SetTitle("Template Error").
+			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		return
+	}
+}
+
+func renderBackBtn(w http.ResponseWriter) error {
+	tmpl, err := template.New("home").Parse(`<a href="/counter" class="btn btn-secondary col-6 rounded-3">Back to main</a>`)
+	if err != nil {
+		return err
+	}
+	if err := tmpl.Execute(w, nil); err != nil {
+		return err
+	}
+	return nil
 }
 
 func init() {
 	var err error
-	lobbyTmpl, err = template.ParseFS(templates.Main,
+	lobbyTmpl, err = template.New("lobby-template").Funcs(template.FuncMap{
+		"renderPlayerResult": func(status models.ResultStatus) string {
+			var color string
+			switch status {
+			case models.RESULT_STATUS_WIN:
+				color = "green"
+			case models.RESULT_STATUS_LOSE:
+				color = "red"
+			case models.RESULT_STATUS_LEAVE:
+				color = "grey"
+			default:
+				color = "black"
+			}
+			return fmt.Sprintf(`<span class="w-50 text-center" style="color: %s;">%s</span>`, color, status)
+		},
+	}).ParseFS(templates.Main,
 		"main/base.html",
 		"main/sections/lobby.html",
 		"main/components/*.html",
