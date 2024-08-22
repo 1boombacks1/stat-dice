@@ -134,3 +134,141 @@ ul {
         clip-path: inset(0 -.25rem 0 0)
       }
     }
+
+/* leaderboard */
+.leaderboard {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+    gap: .5vh;
+}
+
+.filter {
+    height: 7%;
+    margin: 1vh 4vw;
+
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    border-radius: 30px;
+    overflow: hidden;
+    border: 1px solid black;
+    box-shadow: 4px 4px black;
+}
+
+.filter-btn {
+    width: 33.33%;
+    text-align: center;
+    cursor: pointer;
+    color: black;
+    z-index: 1;
+}
+
+.filter-btn.active {
+    color: white;
+}
+
+.filter-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 0;
+    width: 33.33%;
+    background-color: black;
+    transition: transform 0.3s ease;
+    border-radius: 25px;
+}
+
+.chart {
+    display: flex;
+    flex-direction: column;
+    overflow: scroll;
+    height: 90%;
+    gap: 1.2vh;
+}
+
+.chart p {
+    font-family: var(--font-light-cyrillic);
+}
+
+.leaderboard-title {
+    text-align: center;
+}
+
+.leaderboard-title h2 {
+    font-family: var(--font-extra-bold);
+    margin-bottom: .2vh;
+}
+
+.chart-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vh;
+    margin: 0 5vw;
+}
+
+.chart-list li {
+    display: flex;
+    justify-content: space-between;
+}
+
+li:first-child {
+    margin-bottom: -.8vh;
+}
+.chart-list-subheader p {
+    font-family: var(--font-semi-bold);
+    font-size: x-small;
+}
+.chart-list-subheader {
+    margin: 0 15px 0 20px;
+}
+.chart-list-item-stat {
+    width: 40%;
+    display: flex;
+    align-items: center;
+}
+.chart-list-item-stat p {
+    width: 33.33%;
+    position: relative;
+    text-align: center;
+}
+
+.chart-list-subheader .chart-list-item-stat {
+    justify-content: space-between;
+}
+
+.chart-list-player .chart-list-item-stat {
+    justify-content: space-between;
+}
+
+.chart-list-player {
+    font-size: var(--font-xl-size);
+    padding: 5px 13px 5px 15px;
+    border: 1px solid black;
+    border-radius: 22px;
+    box-shadow: 5px 4px black;
+    margin: 0 5px 4px 0;
+    transform: translateX(100%);
+    opacity: 0;
+    animation: slide-in 0.5s ease forwards;
+    animation-delay: var(--delay);
+}
+
+.champion {
+    background-color: var(--color-purple);
+    color: white;
+}
+
+@keyframes slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

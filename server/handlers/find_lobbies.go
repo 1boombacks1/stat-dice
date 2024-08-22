@@ -11,7 +11,6 @@ import (
 	httpErrors "github.com/1boombacks1/stat_dice/server/http_errors"
 	"github.com/1boombacks1/stat_dice/server/templates"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/render"
 	"github.com/google/uuid"
 )
 
@@ -19,7 +18,8 @@ var findLobbiesTmpl *template.Template
 
 func FindLobbiesContent(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	if err := findLobbiesTmpl.ExecuteTemplate(w, "content", nil); err != nil {
-		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("rendering find-lobbies content: %w", err)).WithLog(ctx.Error()))
+		httpErrors.ErrInternalServer(fmt.Errorf("rendering find-lobbies content: %w", err)).SetTitle("Template Error").
+			WithLog(ctx.Error()).Execute(w, httpErrors.AppErrTmplName, ctx.Error())
 	}
 }
 

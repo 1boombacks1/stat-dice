@@ -35,7 +35,7 @@ a {
 
 .content {
     flex-grow: 1;
-    height: 80vh;
+    height: 83vh;
 }
 :root {
     --color-purple: #A460FF;

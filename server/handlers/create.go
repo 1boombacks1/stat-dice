@@ -9,21 +9,20 @@ import (
 	"github.com/1boombacks1/stat_dice/models"
 	httpErrors "github.com/1boombacks1/stat_dice/server/http_errors"
 	"github.com/1boombacks1/stat_dice/server/templates"
-	"github.com/go-chi/render"
 	"github.com/google/uuid"
 )
 
 func CreateLobbyContent(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	content, err := templates.CREATE_LOBBY_CONTENT.GetTemplate()
 	if err != nil {
-		render.Render(w, r,
-			httpErrors.ErrInternalServer(fmt.Errorf("getting create lobby page content: %w", err)).
-				WithLog(ctx.Error()))
+		httpErrors.ErrInternalServer(fmt.Errorf("getting create lobby page content: %w", err)).SetTitle("Template Error").
+			WithLog(ctx.Error()).Execute(w, httpErrors.AppErrTmplName, ctx.Error())
 		return
 	}
 
 	if err := content.Execute(w, nil); err != nil {
-		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("rendering create lobby page: %w", err)).WithLog(ctx.Error()))
+		httpErrors.ErrInternalServer(fmt.Errorf("rendering create lobby page: %w", err)).SetTitle("Template Error").
+			WithLog(ctx.Error()).Execute(w, httpErrors.AppErrTmplName, ctx.Error())
 	}
 }
 

@@ -13,8 +13,8 @@
     </a>
     {{ end }}
     <div class="menu-main-panel">
-        <div class="menu-btn">
-            <div id="leader-menu-icon" class="menu-icon leader-icon deactivated"></div>
+        <div class="menu-btn" hx-get="/counter/leaderboard" hx-target="#app-content" hx-swap="innerHTML">
+            <div id="leader-menu-icon" class="menu-icon leader-icon"></div>
             <p class="menu-text">leaderboard</p>
         </div>
         <div class="menu-btn" hx-get="/counter/create-lobby" hx-target="#app-content" hx-target-error="#error" hx-swap="innerHTML">

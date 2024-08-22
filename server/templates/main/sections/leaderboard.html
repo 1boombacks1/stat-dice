@@ -1,0 +1,149 @@
+{{ block "content" .}}
+<div class="leaderboard">
+    <div class="filter">
+        <div class="filter-indicator"></div>
+        <div class="filter-btn active" data-index="0"
+            hx-get="/counter/get-players-win-stats" hx-swap="outerHTML" hx-target="#chart-list" hx-trigger="load,click">Wins</div>
+        <div class="filter-btn" data-index="1"
+            hx-get="/counter/get-players-lose-stats" hx-swap="outerHTML" hx-target="#chart-list">Lose</div>
+        <div class="filter-btn" data-index="2"
+            hx-get="/counter/get-players-total-stats" hx-swap="outerHTML" hx-target="#chart-list">Total</div>
+    </div>
+
+    <!-- <div class="diagram">
+
+    </div> -->
+    <div class="chart">
+        <div class="leaderboard-title">
+            <h2>Leaderboard</h2>
+            <p>{{ . }}</p>
+        </div>
+        <ul id="chart-list" class="chart-list" hx-get="/counter/get-players-win-stats" hx-swap="outerHTML">
+        </ul>
+    </div>
+</div>
+<script>
+    if (typeof buttons === 'undefined') {
+        const buttons = document.querySelectorAll('.filter-btn');
+        const indicator = document.querySelector('.filter-indicator');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                buttons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                const index = button.dataset.index;
+                indicator.style.transform = `translateX(${index * 100}%)`;
+            });
+        });
+    }
+</script>
+{{ end }}
+
+{{ define "win-leaderboard" }}
+<ul id="chart-list" class="chart-list">
+    <li class="chart-list-subheader">
+        <p>Name</p>
+        <div class="chart-list-item-stat">
+            <p>Win</p>
+            <p>Lose</p>
+            <p>Total</p>
+        </div>
+    </li>
+    {{ $MaxFilter := .MaxFilter }}
+    {{ $Status := .Status }}
+    {{ range $idx, $Player := .Stats }}
+        {{ if $Player.IsChampion $Status $MaxFilter }}
+        <li class="chart-list-player champion" style="--delay: .{{ $idx }}s">
+            <p>{{ $Player.Name }}</p>
+            <div class="chart-list-item-stat">
+                <p>{{ $Player.FormatNum $Player.Win }}</p>
+                <p>{{ $Player.FormatNum $Player.Lose }}</p>
+                <p>{{ $Player.FormatNum $Player.Total }}</p>
+            </div>
+        </li>
+        {{ else }}
+        <li class="chart-list-player" style="--delay: .{{ $idx }}s">
+            <p>{{ $Player.Name }}</p>
+            <div class="chart-list-item-stat">
+                <p>{{ $Player.FormatNum $Player.Win }}</p>
+                <p>{{ $Player.FormatNum $Player.Lose }}</p>
+                <p>{{ $Player.FormatNum $Player.Total }}</p>
+            </div>
+        </li>
+        {{ end }}
+    {{ end }}
+</ul>
+{{ end }}
+
+{{ define "lose-leaderboard" }}
+<ul id="chart-list" class="chart-list">
+    <li class="chart-list-subheader">
+        <p>Name</p>
+        <div class="chart-list-item-stat">
+            <p>Lose</p>
+            <p>Win</p>
+            <p>Total</p>
+        </div>
+    </li>
+    {{ $MaxFilter := .MaxFilter }}
+    {{ $Status := .Status }}
+    {{ range $idx, $Player := .Stats }}
+        {{ if $Player.IsChampion $Status $MaxFilter }}
+        <li class="chart-list-player champion" style="--delay: .{{ $idx }}s">
+            <p>{{ $Player.Name }}</p>
+            <div class="chart-list-item-stat">
+                <p>{{ $Player.FormatNum $Player.Lose }}</p>
+                <p>{{ $Player.FormatNum $Player.Win }}</p>
+                <p>{{ $Player.FormatNum $Player.Total }}</p>
+            </div>
+        </li>
+        {{ else }}
+        <li class="chart-list-player" style="--delay: .{{ $idx }}s">
+            <p>{{ $Player.Name }}</p>
+            <div class="chart-list-item-stat">
+                <p>{{ $Player.FormatNum $Player.Lose }}</p>
+                <p>{{ $Player.FormatNum $Player.Win }}</p>
+                <p>{{ $Player.FormatNum $Player.Total }}</p>
+            </div>
+        </li>
+        {{ end }}
+    {{ end }}
+</ul>
+{{ end }}
+
+{{ define "total-leaderboard" }}
+<ul id="chart-list" class="chart-list">
+    <li class="chart-list-subheader">
+        <p>Name</p>
+        <div class="chart-list-item-stat">
+            <p>Total</p>
+            <p>Win</p>
+            <p>Lose</p>
+        </div>
+    </li>
+    {{ $MaxFilter := .MaxFilter }}
+    {{ $Status := .Status }}
+    {{ range $idx, $Player := .Stats }}
+        {{ if $Player.IsChampion $Status $MaxFilter }}
+        <li class="chart-list-player champion" style="--delay: .{{ $idx }}s">
+            <p>{{ $Player.Name }}</p>
+            <div class="chart-list-item-stat">
+                <p>{{ $Player.FormatNum $Player.Total }}</p>
+                <p>{{ $Player.FormatNum $Player.Win }}</p>
+                <p>{{ $Player.FormatNum $Player.Lose }}</p>
+            </div>
+        </li>
+        {{ else }}
+        <li class="chart-list-player" style="--delay: .{{ $idx }}s">
+            <p>{{ $Player.Name }}</p>
+            <div class="chart-list-item-stat">
+                <p>{{ $Player.FormatNum $Player.Total }}</p>
+                <p>{{ $Player.FormatNum $Player.Win }}</p>
+                <p>{{ $Player.FormatNum $Player.Lose }}</p>
+            </div>
+        </li>
+        {{ end }}
+    {{ end }}
+</ul>
+{{ end }}
