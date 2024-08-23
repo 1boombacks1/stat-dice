@@ -1,93 +1,107 @@
 {{ block "content" . }}
 <div class="lobby-page">
-    <div class="m-3 d-flex flex-column bg-dark text-light text-center rounded-4">
-        <span class="fs-1 fw-semibold">{{ .LobbyInfo.Name }}</span>
-        <span class="pt-1 pb-2">
-            <span>Created At: </span>
-            <span>{{ .LobbyInfo.CreatedAt }}</span>
-        </span>
-    </div>
-    <ul class="list-group m-3 text-center" hx-get="/counter/lobby/{{ .LobbyInfo.ID }}/players" hx-trigger="load, every 2.5s">
-        <li class="list-group-item"><span class="loading">Loading...</span></li>
-    </ul>
-
-    <div id="lobby-btns" class="d-flex flex-column me-2 ms-2 column-gap-1">
-        {{ if .IsHost }}
-            {{ if eq .LobbyInfo.Status 0 }}
-                {{ template "lobby-host-start-btns" .LobbyInfo.ID }}
-            {{ else if eq .LobbyInfo.Status 1 }}
-                {{ template "lobby-host-end-btns" .LobbyInfo.ID }}
-            {{ else if eq .LobbyInfo.Status 2 }}
-                {{ template "lobby-player-btns" .LobbyInfo.ID }}
-            {{ end }}
-        {{ else }}
-            {{ if eq .LobbyInfo.Status 2 }}
-                {{ template "lobby-player-btns" .LobbyInfo.ID }}
+    <div class="lobby-header">{{ .LobbyInfo.Name }}</div>
+    <div class="lobby-content">
+        <ul class="lobby-players-list" hx-get="/counter/lobby/{{ .LobbyInfo.ID }}/players" hx-trigger="load, every 2.5s">
+            <li class="lobby-player">
+                <span class="loading">Loading...</span>
+            </li>
+        </ul>
+        <div class="lobby-menu-panel">
+            <div class="lobby-info">
+                <div class="lobby-info-item">
+                    <span>Date: </span>
+                    <span>{{ .LobbyInfo.CreatedAt }}</span>
+                </div>
+                <div class="lobby-info-item">
+                    <span>Players: </span>
+                    <span id="lobby-player-count"></span>
+                </div>
+            </div>
+            {{ if .IsHost }}
+                {{ if eq .LobbyInfo.Status 0 }}
+                    {{ template "lobby-host-start-btns".LobbyInfo.ID }}
+                {{ else if eq .LobbyInfo.Status 1 }}
+                    {{ template "lobby-host-end-btns" .LobbyInfo.ID }}
+                {{ else if eq .LobbyInfo.Status 2 }}
+                    {{ template "lobby-player-btns" .LobbyInfo.ID }}
+                {{ end }}
             {{ else }}
-                {{ template "lobby-player-waiting-btns" .LobbyInfo.ID }}
+                {{ if eq .LobbyInfo.Status 2 }}
+                    {{ template "lobby-player-btns" .LobbyInfo.ID }}
+                {{ else }}
+                    {{ template "lobby-player-waiting-btns" .LobbyInfo.ID }}
             {{ end }}
         {{ end }}
+        </div>
     </div>
 </div>
+<script>
+    function updatePlayerCount() {
+        const playerList = document.querySelector('.lobby-players-list');
+        const players = playerList.querySelectorAll('.lobby-player.player').length;
+        if (players > 1) {
+            document.getElementById('host-start-btn').disabled = false;
+        }
+        document.getElementById('lobby-player-count').textContent = players.toString().padStart(2, '0');
+        document.getElementById('menu-player-count').textContent = 'Players: ' + players.toString().padStart(2, '0');
+    }
+
+    setInterval(updatePlayerCount, 2500);
+    document.addEventListener('DOMContentLoaded', updatePlayerCount);
+</script>
 {{ end }}
 
 {{ define "lobby-players-list" }}
-    {{$CurrentPlayerID := .CurrentPlayerID}}
     {{ range $Player := .Players }}
-        {{ if eq $Player.GetID $CurrentPlayerID }}
-        <li class="list-group-item d-flex justify-content-center list-group-item-secondary">
-            <span class="w-50 text-center">{{ $Player.Name }}</span>
-            {{ renderPlayerResult $Player.Match.Result }}
+        <li class="lobby-player player">
+            <div class="lobby-player-name">
+                <div class="lobby-circle"></div>
+                <p>{{ $Player.Name }}</p>
+            </div>
+            <div class="lobby-player-info">
+                {{ renderPlayerResult $Player.Match.Result }}
+            </div>
         </li>
-        {{ else }}
-        <li class="list-group-item d-flex justify-content-center">
-            <span class="w-50 text-center">{{ $Player.Name }}</span>
-            <span class="w-50 text-center">{{ $Player.Match.Result.String }}</span>
-        </li>
-        {{ end }}
     {{ end }}
     {{ if eq .LobbyStatus 0 }}
-        <li class="list-group-item"><span class="loading">Waiting players...</span></li>
+        <li class="lobby-player">
+            <span class="loading">Waiting players...</span>
+        </li>
     {{ end }}
 {{ end }}
 
 {{ define "lobby-host-start-btns" }}
-<div class="host-start-buttons d-flex flex-row col-12 column-gap-1">
-    <button class="btn btn-success col-6 rounded-3" type="button"
-        hx-post="/counter/lobby/{{ . }}/start" hx-target="#lobby-btns">START</button>
-    <button class="btn btn-danger col-6 rounded-3" type="button"
-    hx-delete="/counter/lobby/{{ . }}">CANCEL</button>
-</div>
+    <div id="lobby-btns" class="lobby-btns host">
+        <button id="host-start-btn" type="button"
+            hx-post="/counter/lobby/{{ . }}/start" hx-target="#lobby-btns" hx-swap="outerHTML" disabled>Start</button>
+        <button type="button"
+            hx-delete="/counter/lobby/{{ . }}">Cancel</button>
+    </div>
 {{ end }}
 
 {{ define "lobby-host-end-btns" }}
-<div class="host-end-buttons d-flex flex-row col-12 column-gap-2 justify-content-center">
-    <button class="btn col-5 rounded-3" type="button"
-        hx-post="/counter/lobby/{{ . }}/stop" hx-target="#lobby-btns">STOP GAME</button>
-    <button class="btn btn-secondary col-5 rounded-3" type="button"
-        hx-post="/counter/lobby/{{ . }}/leave">LEAVE</button>
-</div>
+    <div id="lobby-btns" class="lobby-btns host">
+        <button type="button"
+        hx-post="/counter/lobby/{{ . }}/stop" hx-target="#lobby-btns" hx-swap="outerHTML">Finish</button>
+       {{ template "lobby-player-leave-btn" . }}
+    </div>
 {{ end }}
 
 {{ define "lobby-player-btns" }}
-<div id="player-buttons" class="player-buttons d-flex flex-column align-items-center column-gap-1">
-    <div class="d-flex flex-row col-12 column-gap-1">
-        <button class="btn btn-success col-6 rounded-3" type="button"
-            hx-post="/counter/lobby/{{ . }}/win" hx-target="#player-buttons" hx-swap="innerHTML">Win</button>
-        <button class="btn btn-danger col-6 rounded-3" type="button"
-            hx-post="/counter/lobby/{{ . }}/lose" hx-target="#player-buttons" hx-swap="innerHTML">Lose</button>
-    </div>
+<div id="lobby-btns" class="lobby-btns player">
+    <button type="button" hx-post="/counter/lobby/{{ . }}/win" hx-target="#lobby-btns" hx-swap="innerHTML">Win</button>
+    <button type="button" hx-post="/counter/lobby/{{ . }}/lose" hx-target="#lobby-btns" hx-swap="innerHTML">Lose</button>
 </div>
 {{ end }}
 
 {{ define "lobby-player-waiting-btns" }}
-<div class="d-flex flex-column justify-content-center w-75 m-auto row-gap-2"
-    hx-get="/counter/lobby/{{ . }}/status" hx-target="#lobby-btns" hx-trigger="every 3s" hx-swap="none">
-    <p class="text-center">Кнопки победы/поражения появятся, когда хост завершит сессию</p>
+<div id="lobby-btns" class="lobby-btns player" hx-get="/counter/lobby/{{ . }}/status" hx-trigger="every 3s" hx-swap="none">
+    <p>Кнопки победы/поражения появятся, когда хост завершит игру</p>
     {{ template "lobby-player-leave-btn" . }}
 </div>
 {{ end }}
 
 {{ define "lobby-player-leave-btn"}}
-    <button class="btn btn-outline-secondary mt-2 rounded-3" hx-post="/counter/lobby/{{ . }}/leave" hx-swap="delete" type="button">Leave</button>
+    <button type="button" hx-post="/counter/lobby/{{ . }}/leave">Leave</button>
 {{ end }}

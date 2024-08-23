@@ -55,4 +55,6 @@
     margin-bottom: 1.5vh;
     border-radius: 5px;
     box-shadow: 2px 2px black;
+    padding: 0;
+    font-size: var(--font-m-size);
 }

@@ -65,8 +65,6 @@ func LobbyPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 }
 
 func GetLobbyPlayers(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
-	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
-
 	lobbyIDParam := chi.URLParam(r, "id")
 	lobbyID, err := uuid.Parse(lobbyIDParam)
 	if err != nil {
@@ -89,15 +87,13 @@ func GetLobbyPlayers(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request)
 	}
 
 	type ListInfo struct {
-		Players         []*models.User
-		CurrentPlayerID string
-		LobbyStatus     models.LobbyStatus
+		Players     []*models.User
+		LobbyStatus models.LobbyStatus
 	}
 
 	data := ListInfo{
-		Players:         players,
-		CurrentPlayerID: user.GetID(),
-		LobbyStatus:     lobby.Status,
+		Players:     players,
+		LobbyStatus: lobby.Status,
 	}
 
 	if err := lobbyTmpl.ExecuteTemplate(w, "lobby-players-list", data); err != nil {
@@ -110,7 +106,7 @@ func GetLobbyStatus(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) 
 	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
 
 	if user.Match.Lobby.Status == models.LOBBY_STATUS_RESULT {
-		w.Header().Set("HX-Reswap", "innerHTML")
+		w.Header().Set("HX-Reswap", "outerHTML")
 		if err := lobbyTmpl.ExecuteTemplate(w, "lobby-player-btns", user.Match.Lobby.GetID()); err != nil {
 			httpErrors.ErrInternalServer(fmt.Errorf("rendering lobby status: %w", err)).WithLog(ctx.Error()).
 				SetTitle("Template Error").
@@ -254,7 +250,7 @@ func LoseMatch(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 }
 
 func renderBackBtn(w http.ResponseWriter) error {
-	tmpl, err := template.New("home").Parse(`<a href="/counter" class="btn btn-secondary col-6 rounded-3">Back to main</a>`)
+	tmpl, err := template.New("home").Parse(`<a href="/counter">Back to main</a>`)
 	if err != nil {
 		return err
 	}
@@ -279,7 +275,7 @@ func init() {
 			default:
 				color = "black"
 			}
-			return fmt.Sprintf(`<span class="w-50 text-center" style="color: %s;">%s</span>`, color, status)
+			return fmt.Sprintf(`<p style="color: %s;">%s</p>`, color, status)
 		},
 	}).ParseFS(templates.Main,
 		"main/base.html",
