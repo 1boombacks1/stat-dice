@@ -105,6 +105,17 @@ func GetLobbyPlayers(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request)
 func GetLobbyStatus(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
 
+	if user.Match.IsHost {
+		w.Header().Set("HX-Reswap", "outerHTML")
+		if err := lobbyTmpl.ExecuteTemplate(w, "lobby-host-end-btns", user.Match.Lobby.GetID()); err != nil {
+			httpErrors.ErrInternalServer(fmt.Errorf("rendering lobby status: %w", err)).WithLog(ctx.Error()).
+				SetTitle("Template Error").
+				Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+			return
+		}
+		return
+	}
+
 	if user.Match.Lobby.Status == models.LOBBY_STATUS_RESULT {
 		w.Header().Set("HX-Reswap", "outerHTML")
 		if err := lobbyTmpl.ExecuteTemplate(w, "lobby-player-btns", user.Match.Lobby.GetID()); err != nil {
@@ -145,7 +156,7 @@ func StopLobby(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 func CancelLobby(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
 
-	if err := user.Match.Lobby.Delete(ctx); err != nil {
+	if err := user.Match.Lobby.Delete(ctx.DB().DB); err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("deleting lobby: %w", err)).WithLog(ctx.Error()).
 			SetTitle("DB Error").
 			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
@@ -155,60 +166,46 @@ func CancelLobby(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	redirectToMainPage(w)
 }
 
-// Deprecated
 func LeaveLobby(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
 
 	if !user.Match.IsHost {
-		if err := user.LeaveFromMatch(ctx); err != nil {
-			httpErrors.ErrInternalServer(fmt.Errorf("leaving from lobby: %w", err)).SetTitle("DB Error").
+		if err := user.Match.Delete(ctx); err != nil {
+			httpErrors.ErrInternalServer(fmt.Errorf("deleting match: %w", err)).WithLog(ctx.Error()).
+				SetTitle("DB Error").
 				Execute(w, httpErrors.AppErrTmplName, ctx.Error())
 			return
 		}
-		redirectToMainPage(w)
+		ctx.Log().EmbedObject(user.Match).Msg("user leaved from match")
+		redirectTo(w, "/counter")
 		return
 	}
 
-	players, err := user.Match.Lobby.GetPlayersWithMatch(ctx)
-	if err != nil {
-		httpErrors.ErrInternalServer(fmt.Errorf("getting players: %w", err)).SetTitle("DB Error").
-			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
-		return
-	}
-
-	if len(players) == 1 || allLeaved(players) {
-		if err := user.Match.Lobby.Delete(ctx); err != nil {
-			httpErrors.ErrInternalServer(fmt.Errorf("deleting lobby: %w", err)).SetTitle("DB Error").
-				Execute(w, httpErrors.AppErrTmplName, ctx.Error())
-			return
-		}
-
-		ctx.Log().Str("user", user.GetID()).Str("lobby", user.Match.LobbyID.String()).Msg("user leaved and deleted lobby beacuse he was alone")
-		redirectToMainPage(w)
-		return
-	}
-
-	if err := user.Match.SwapHost(ctx, players[1]); err != nil {
-		httpErrors.ErrInternalServer(fmt.Errorf("swapping host: %w", err)).SetTitle("DB Error").
-			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
-		return
-	}
-
-	ctx.Log().Str("user", user.GetID()).
-		Str("lobby", user.Match.LobbyID.String()).
-		Str("new_host", players[1].GetID()).Msg("success swapped host")
-
-	redirectToMainPage(w)
-}
-
-func allLeaved(players []*models.User) bool {
-	count := 0
+	players := user.Match.Lobby.Players
 	for _, player := range players {
-		if player.Match.Result != models.RESULT_STATUS_LEAVE {
-			count++
+		if player.ID != user.ID {
+			if err := user.Match.SwapHost(ctx, player); err != nil {
+				httpErrors.ErrInternalServer(fmt.Errorf("swapping host: %w", err)).WithLog(ctx.Error()).
+					SetTitle("DB Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+				return
+			}
+			ctx.Log().Str("lobby-id", user.Match.Lobby.GetID()).
+				Str("user-id", user.GetID()).Str("user-name", user.Name).
+				Str("new-host-id", player.GetID()).Str("new-host-name", player.Name).
+				Msg("swapped host")
+			break
 		}
 	}
-	return count == 1
+
+	if err := user.Match.Delete(ctx); err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("deleting match: %w", err)).WithLog(ctx.Error()).
+			SetTitle("DB Error").
+			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		return
+	}
+
+	ctx.Log().EmbedObject(user.Match).Msg("host leaved from match")
+	redirectTo(w, "/counter")
 }
 
 func WinMatch(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {

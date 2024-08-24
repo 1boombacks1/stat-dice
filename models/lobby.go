@@ -107,8 +107,8 @@ func (l *Lobby) Update(db *gorm.DB, fields []string) error {
 	return nil
 }
 
-func (l *Lobby) Delete(ctx *appctx.AppCtx) error {
-	if err := ctx.DB().Delete(l).Error; err != nil {
+func (l *Lobby) Delete(db *gorm.DB) error {
+	if err := db.Delete(l).Error; err != nil {
 		return fmt.Errorf("deleting lobby: %w", err)
 	}
 	return nil

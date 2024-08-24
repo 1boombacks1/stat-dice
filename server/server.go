@@ -65,7 +65,7 @@ func (s *HTTPServer) initRoutes() {
 					lobbyR.Group(func(playersR chi.Router) {
 						playersR.Use(middlewares.CheckAccessLobby)
 						s.DefineRoute(playersR, "GET", "/", handlers.LobbyPage)
-						// s.DefineRoute(playersR, "POST", "/leave", handlers.LeaveLobby)
+						s.DefineRoute(playersR, "POST", "/leave", handlers.LeaveLobby)
 						s.DefineRoute(playersR, "POST", "/win", handlers.WinMatch)
 						s.DefineRoute(playersR, "POST", "/lose", handlers.LoseMatch)
 					})

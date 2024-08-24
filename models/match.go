@@ -60,6 +60,13 @@ func (m *Match) Update(ctx *appctx.AppCtx, fields []string) error {
 	return nil
 }
 
+func (m *Match) Delete(ctx *appctx.AppCtx) error {
+	if err := ctx.DB().Delete(m).Error; err != nil {
+		return fmt.Errorf("deleting match: %w", err)
+	}
+	return nil
+}
+
 func (m *Match) AfterUpdate(tx *gorm.DB) error {
 	var players []*User
 	err := tx.Model(&User{}).Preload("Match").
@@ -82,5 +89,21 @@ func (m *Match) AfterUpdate(tx *gorm.DB) error {
 	}
 
 	fmt.Printf("lobby '%v' are closed\n", m.Lobby.GetID())
+	return nil
+}
+
+func (m *Match) AfterDelete(tx *gorm.DB) error {
+	var playersCount int64
+	if err := tx.Model(&Match{}).Where(Match{LobbyID: m.LobbyID}).Count(&playersCount).Error; err != nil {
+		return fmt.Errorf("getting players count after delete: %w", err)
+	}
+
+	if playersCount == 0 {
+		if err := m.Lobby.Delete(tx); err != nil {
+			return fmt.Errorf("deleting lobby after delete: %w", err)
+		}
+		fmt.Printf("lobby '%v' are deleted\n", m.Lobby.GetID())
+	}
+
 	return nil
 }

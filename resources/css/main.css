@@ -7,12 +7,38 @@
 }
 
 .lobby-form {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     margin: 0 10%;
     margin-top: 5%;
     gap: 0.7rem;
+    overflow: hidden;
+
+    border: 1px solid black;
+    border-radius: 20px;
+    padding: 2.5rem 2.5rem 1.5rem 2.5rem;
+    box-shadow: 4px 4px black;
+}
+
+.lobby-form-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: .5vh 0;
+    background-color: black;
+    color: white;
+    text-align: center;
+    font-size: var(--font-xl-size);
+}
+
+.lobby-input-btn {
+    padding: 1vh 0;
+    border: 1px solid black;
+    box-shadow: 2px 2px black;
+    border-radius: 10px;
 }
 
 .lobby-input {
@@ -20,7 +46,7 @@
     border: 1px solid black;
     border-radius: 9px;
     padding: 7px 11px;
-    margin: 0 4px 4px 0;
+    margin: 1.8vh 4px 4px 0;
     box-shadow: 4px 4px black;
 }
 .lobby-input:focus {
@@ -30,13 +56,16 @@
 .checkbox {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: .5rem;
+    /* justify-content: center; */
+    gap: .8rem;
     margin-bottom: .5rem;
+    margin-left: .5rem;
 }
 
 .checkbox label {
     text-decoration: underline;
+    font-family: var(--font-light-cyrillic);
+    font-weight: bold;
 }
 
 /* find css */

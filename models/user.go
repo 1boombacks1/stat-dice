@@ -33,7 +33,7 @@ type UserJWTClaims struct {
 type userCtxKey struct{}
 
 func (u User) MarshalZerologObject(e *zerolog.Event) {
-	e.EmbedObject(u.Base).Str("login", u.Login).Str("name", u.Name).EmbedObject(u.Match)
+	e.EmbedObject(u.Base).Str("login", u.Login).Str("name", u.Name)
 }
 
 func GetPlayersByLobbyID(ctx *appctx.AppCtx, lobbyID uuid.UUID) ([]*User, error) {
@@ -109,13 +109,6 @@ func getUserByLogin(ctx *appctx.AppCtx, login string) (*User, error) {
 		Where("users.login = ?", login).
 		Order("lobbies.created_at DESC").
 		First(&user).Error
-	// Select("users.*, matches.*").
-	// Joins("LEFT JOIN matches ON matches.user_id = users.id").
-	// Joins("LEFT JOIN lobbies ON matches.lobby_id = lobbies.id").
-	// Where("users.login = ? AND (lobbies.status IN ? OR matches.lobby_id IS NULL)",
-	// 	login, []LobbyStatus{LOBBY_STATUS_OPEN, LOBBY_STATUS_PROCESSING, LOBBY_STATUS_RESULT}).
-	// Order("lobbies.created_at DESC").
-	// First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -123,7 +116,7 @@ func getUserByLogin(ctx *appctx.AppCtx, login string) (*User, error) {
 		return nil, fmt.Errorf("getting user: %w", err)
 	}
 
-	if user.Match != nil && (user.Match.Result == RESULT_STATUS_LEAVE || user.Match.Lobby.Status == LOBBY_STATUS_CLOSED) {
+	if user.Match != nil && user.Match.Lobby.Status == LOBBY_STATUS_CLOSED {
 		user.Match = nil
 	}
 

@@ -40,7 +40,8 @@
     function updatePlayerCount() {
         const playerList = document.querySelector('.lobby-players-list');
         const players = playerList.querySelectorAll('.lobby-player.player').length;
-        if (players > 1) {
+        const hostStartBtn = document.getElementById('host-start-btn');
+        if (players > 1 && hostStartBtn !== null) {
             document.getElementById('host-start-btn').disabled = false;
         }
         document.getElementById('lobby-player-count').textContent = players.toString().padStart(2, '0');

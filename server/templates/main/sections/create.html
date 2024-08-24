@@ -1,12 +1,13 @@
 {{ block "content" . }}
 <div class="create-lobby">
     <form class="lobby-form" hx-post="/counter/create-lobby">
+        <div class="lobby-form-header">Lobby Settings</div>
         <input class="lobby-input" name="lobby-name" type="text" placeholder="lobby name" required/>
         <div class="checkbox">
             <input id="competitive" type="checkbox" name="competitive"/>
-            <label for="competitive">Competitive Mode?</label>
+            <label for="competitive">Рейтинг?</label>
         </div>
-        <button class="lobby-btn btn btn-dark btn-lg rounded-pill" type="submit">Create</button>
+        <button class="lobby-input-btn" type="submit">Create</button>
     </form>
 </div>
 {{ end }}
