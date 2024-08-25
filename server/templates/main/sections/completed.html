@@ -1,0 +1,25 @@
+{{ block "content" . }}
+<ul class="completed-list">
+    {{ range $idx, $lobby := . }}
+        <li class="completed-item {{if IsEven $idx }}reverse{{end}}" style="--delay: .{{ $idx }}s">
+            <div class="completed-header">{{ $lobby.Name }}</div>
+            <div class="completed-info">
+                <div>
+                    <div><span class="bold">Players: </span><span>{{ $lobby.GetPlayerCount }}</span></div>
+                    <div><span class="bold">Duration: </span><span>{{ $lobby.GetCurrentDuration }}</span></div>
+                </div>
+                <div><span class="bold">Date: </span><span class="timestamspan">{{ $lobby.GetCreatedAt }}</span></div>
+            </div>
+            <div class="separator"></div>
+            <div class="completed-player-list">
+                    {{ range $User := .Players }}
+                    <div class="completed-player">
+                        <div class="completed-player-name">{{ $User.Name }}</div>
+                        {{- RenderPlayerResult $User.Match.Result -}}
+                    </div>
+                    {{ end }}
+            </div>
+        </li>
+    {{ end }}
+</ul>
+{{ end }}

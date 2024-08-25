@@ -216,7 +216,7 @@ ul {
 .chart {
     display: flex;
     flex-direction: column;
-    /* overflow: scroll; */
+    overflow: scroll;
     height: 90%;
     gap: 1.2vh;
 }
@@ -302,4 +302,96 @@ ul {
         transform: translateX(0);
         opacity: 1;
     }
+}
+
+@keyframes reverse-slide-in {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* completed  */
+.completed-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    font-size: var(--font-l-size);
+    height: 100%;
+    overflow-y: auto;
+}
+
+.completed-item {
+    border: 1px solid #000;
+    border-radius: 30px;
+    background-color: #f9f9f9;
+    margin: 1rem;
+    box-shadow: 5px 5px black;
+    padding-bottom: 2vh;
+    max-width: 100%;
+    transform: translateX(100%);
+    opacity: 0;
+    animation: slide-in 0.5s ease forwards;
+    animation-delay: var(--delay);
+}
+.completed-item.reverse {
+    transform: translateX(-100%);
+    animation: reverse-slide-in 0.5s ease forwards;
+    animation-delay: var(--delay);
+}
+
+.completed-header {
+    text-align: center;
+    font-size: var(--font-xxl-size);
+    font-family: var(--font-extra-bold);
+}
+
+.completed-info {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+.completed-info > div:first-child {
+    display: flex;
+    justify-content: center;
+    gap: 5vw;
+}
+.completed-info span:last-child {
+    font-family: var(--font-light-cyrillic);
+    font-weight: 100;
+}
+
+.separator {
+    margin: 1.2vh 0;
+    width: 100%;
+    height: 1px;
+    background-color: #000;
+}
+
+
+.completed-player-list {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 10px 30px;
+    padding: 0 5vw;
+}
+
+.completed-player {
+    display: flex;
+    justify-content: space-between;
+}
+
+.completed-player-name {
+    font-family: var(--font-light-cyrillic);
+}
+
+.result {
+    width: 15%;
+    text-align: center;
 }

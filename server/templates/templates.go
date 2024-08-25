@@ -3,7 +3,7 @@ package templates
 import (
 	"embed"
 	"errors"
-	"text/template"
+	"html/template"
 )
 
 //go:embed auth
@@ -51,7 +51,11 @@ func (m PageContent) Filename() string {
 	return []string{"find-lobbies.html", "create.html", "leaderboard.html", "completed.html", "lobby.html"}[m]
 }
 
-func (m PageContent) GetTemplate() (*template.Template, error) {
+func (m PageContent) GetTemplate(funcs *template.FuncMap) (*template.Template, error) {
 	path := "main/sections/" + m.Filename()
-	return template.ParseFS(Main, path)
+	tmpl := template.New(m.Filename())
+	if funcs != nil {
+		tmpl = tmpl.Funcs(*funcs)
+	}
+	return tmpl.ParseFS(Main, path)
 }

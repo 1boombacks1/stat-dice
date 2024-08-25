@@ -62,7 +62,7 @@ func Index(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 }
 
 func prepareIndexTemplate(startPage templates.PageContent) (*template.Template, error) {
-	startTmpl, err := startPage.GetTemplate()
+	startTmpl, err := startPage.GetTemplate(nil)
 	if err != nil {
 		return nil, fmt.Errorf("getting template: %w", err)
 	}

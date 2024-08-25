@@ -3,8 +3,8 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
-	"text/template"
 
 	"github.com/1boombacks1/stat_dice/appctx"
 	"github.com/1boombacks1/stat_dice/models"
@@ -93,7 +93,7 @@ func JoinLobby(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 
 func init() {
 	var err error
-	findLobbiesTmpl, err = templates.FIND_LOBBY_CONTENT.GetTemplate()
+	findLobbiesTmpl, err = templates.FIND_LOBBY_CONTENT.GetTemplate(nil)
 	if err != nil {
 		panic(fmt.Errorf("failed to get FIND_LOBBY template: %w", err))
 	}

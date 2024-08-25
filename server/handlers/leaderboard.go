@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
-	"text/template"
 	"time"
 
 	"github.com/1boombacks1/stat_dice/appctx"
@@ -113,7 +113,7 @@ func executeFilterTemplate(w http.ResponseWriter, data filterData) error {
 
 func init() {
 	var err error
-	leaderboardTmpl, err = templates.LEADERBOARD_CONTENT.GetTemplate()
+	leaderboardTmpl, err = templates.LEADERBOARD_CONTENT.GetTemplate(nil)
 	if err != nil {
 		panic(fmt.Errorf("failed to get LEADERBOARD template: %w", err))
 	}

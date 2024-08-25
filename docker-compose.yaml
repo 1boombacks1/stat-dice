@@ -17,3 +17,5 @@ services:
 
 volumes:
   db-data:
+    external: true
+    name: db-data

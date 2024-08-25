@@ -48,3 +48,14 @@ func GetFilterStats(ctx *appctx.AppCtx, orderQuery string) ([]PlayerStat, error)
 
 	return stats, nil
 }
+
+func GetCompletedLobbies(ctx *appctx.AppCtx) ([]Lobby, error) {
+	var lobbies []Lobby
+	err := ctx.DB().Preload("Players").
+		Where(&Lobby{Status: LOBBY_STATUS_CLOSED}).Order("ended_at desc").Find(&lobbies).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get completed lobbies: %v", err)
+	}
+
+	return lobbies, nil
+}

@@ -13,7 +13,7 @@ import (
 )
 
 func CreateLobbyContent(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
-	content, err := templates.CREATE_LOBBY_CONTENT.GetTemplate()
+	content, err := templates.CREATE_LOBBY_CONTENT.GetTemplate(nil)
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("getting create lobby page content: %w", err)).SetTitle("Template Error").
 			WithLog(ctx.Error()).Execute(w, httpErrors.AppErrTmplName, ctx.Error())

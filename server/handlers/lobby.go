@@ -3,8 +3,8 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
-	"text/template"
 
 	"github.com/1boombacks1/stat_dice/appctx"
 	"github.com/1boombacks1/stat_dice/models"
@@ -260,7 +260,7 @@ func renderBackBtn(w http.ResponseWriter) error {
 func init() {
 	var err error
 	lobbyTmpl, err = template.New("lobby-template").Funcs(template.FuncMap{
-		"renderPlayerResult": func(status models.ResultStatus) string {
+		"renderPlayerResult": func(status models.ResultStatus) template.HTML {
 			var color string
 			switch status {
 			case models.RESULT_STATUS_WIN:
@@ -272,7 +272,7 @@ func init() {
 			default:
 				color = "black"
 			}
-			return fmt.Sprintf(`<p style="color: %s;">%s</p>`, color, status)
+			return template.HTML(fmt.Sprintf(`<p style="color: %s;">%s</p>`, color, status))
 		},
 	}).ParseFS(templates.Main,
 		"main/base.html",

@@ -25,8 +25,8 @@
             <div id="find-menu-icon" class="menu-icon find-lobby-active-icon"></div>
             <p class="menu-text">find lobby</p>
         </div>
-        <div class="menu-btn">
-            <div id="completed-menu-icon" class="menu-icon completed-icon deactivated"></div>
+        <div class="menu-btn" hx-get="/counter/completed-lobbies" hx-target="#app-content" hx-target-error="#error" hx-swap="innerHTML">
+            <div id="completed-menu-icon" class="menu-icon completed-icon"></div>
             <p class="menu-text">completed</p>
         </div>
     </div>

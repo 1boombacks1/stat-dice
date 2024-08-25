@@ -82,6 +82,7 @@ func (s *HTTPServer) initRoutes() {
 			s.DefineRoute(appR, "GET", "/create-lobby", handlers.CreateLobbyContent)
 			s.DefineRoute(appR, "GET", "/find-lobbies", handlers.FindLobbiesContent)
 			s.DefineRoute(appR, "GET", "/leaderboard", handlers.LeaderboardContent)
+			s.DefineRoute(appR, "GET", "/completed-lobbies", handlers.GetCompletedLobbies)
 
 			s.DefineRoute(appR, "POST", "/create-lobby", handlers.CreateLobby)
 			s.DefineRoute(appR, "GET", "/open-lobbies", handlers.GetOpenLobbies)
