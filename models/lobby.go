@@ -61,7 +61,7 @@ func GetOpenLobbies(ctx *appctx.AppCtx) ([]*Lobby, error) {
 
 func (l *Lobby) GetPlayersWithMatch(ctx *appctx.AppCtx) ([]*User, error) {
 	var players []*User
-	if err := ctx.DB().Model(&User{}).Preload("Match").
+	if err := ctx.DB().Model(&User{}).Preload("Match", "lobby_id = ?", l.ID).
 		Joins("JOIN matches on matches.user_id = users.id").
 		Joins("JOIN lobbies on matches.lobby_id = lobbies.id").
 		Where("lobbies.id = ?", l.ID).
