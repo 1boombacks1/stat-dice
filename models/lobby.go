@@ -51,9 +51,10 @@ func GetLobbyByID(ctx *appctx.AppCtx, id uuid.UUID) (*Lobby, error) {
 	return &lobby, nil
 }
 
-func GetOpenLobbies(ctx *appctx.AppCtx) ([]*Lobby, error) {
+func GetOpenLobbies(ctx *appctx.AppCtx, gameID *uuid.UUID) ([]*Lobby, error) {
 	var lobbies []*Lobby
-	if err := ctx.DB().Preload("Players").Where("status = ?", LOBBY_STATUS_OPEN).Find(&lobbies).Error; err != nil {
+	err := ctx.DB().Preload("Players").Where("status = ? AND game_id = ?", LOBBY_STATUS_OPEN, gameID).Find(&lobbies).Error
+	if err != nil {
 		return nil, fmt.Errorf("getting lobbies: %w", err)
 	}
 	return lobbies, nil

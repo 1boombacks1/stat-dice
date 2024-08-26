@@ -24,7 +24,14 @@ func FindLobbiesContent(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Reque
 }
 
 func GetOpenLobbies(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
-	lobbies, err := models.GetOpenLobbies(ctx)
+	gameID, err := getGameIDFromCookie(r)
+	if err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("getting game id from cookie: %w", err)).SetTitle("Cookie Error").
+			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		return
+	}
+
+	lobbies, err := models.GetOpenLobbies(ctx, gameID)
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("getting open lobbies: %w", err)).WithLog(ctx.Error()).
 			SetTitle("DB Error").Execute(w, httpErrors.AppErrTmplName, ctx.Error())

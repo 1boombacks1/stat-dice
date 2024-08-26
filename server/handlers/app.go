@@ -11,6 +11,7 @@ import (
 	httpErrors "github.com/1boombacks1/stat_dice/server/http_errors"
 	"github.com/1boombacks1/stat_dice/server/templates"
 	"github.com/go-chi/render"
+	"github.com/google/uuid"
 )
 
 var baseTmpl *template.Template
@@ -107,6 +108,18 @@ func redirectToMainPage(w http.ResponseWriter) {
 
 func refreshPage(w http.ResponseWriter) {
 	w.Header().Set("HX-Refresh", "true")
+}
+
+func getGameIDFromCookie(r *http.Request) (*uuid.UUID, error) {
+	cookie, err := r.Cookie("game-id")
+	if err != nil {
+		return nil, fmt.Errorf("getting game id cookie: %w", err)
+	}
+	gameID, err := uuid.Parse(cookie.Value)
+	if err != nil {
+		return nil, fmt.Errorf("parsing game id cookie: %w", err)
+	}
+	return &gameID, nil
 }
 
 func init() {

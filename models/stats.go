@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/1boombacks1/stat_dice/appctx"
+	"github.com/google/uuid"
 )
 
 type PlayerStat struct {
@@ -28,9 +29,9 @@ func (s *PlayerStat) IsChampion(status ResultStatus, max int) bool {
 	}
 }
 
-func GetFilterStats(ctx *appctx.AppCtx, orderQuery string) ([]PlayerStat, error) {
+func GetFilterStats(ctx *appctx.AppCtx, gameID uuid.UUID, orderQuery string) ([]PlayerStat, error) {
 	var stats []PlayerStat
-	err := ctx.DB().Model(&User{}).
+	err := ctx.DB().Debug().Model(&User{}).
 		Select(
 			"users.name as name, "+
 				"COUNT(matches.user_id) as total, "+
@@ -39,6 +40,8 @@ func GetFilterStats(ctx *appctx.AppCtx, orderQuery string) ([]PlayerStat, error)
 			RESULT_STATUS_WIN, RESULT_STATUS_LOSE,
 		).
 		Joins("JOIN matches ON matches.user_id = users.id").
+		Joins("JOIN lobbies ON matches.lobby_id = lobbies.id").
+		Where("lobbies.game_id = ?", gameID).
 		Group("users.name").
 		Order(orderQuery).
 		Scan(&stats).Error
@@ -49,10 +52,10 @@ func GetFilterStats(ctx *appctx.AppCtx, orderQuery string) ([]PlayerStat, error)
 	return stats, nil
 }
 
-func GetCompletedLobbies(ctx *appctx.AppCtx) ([]Lobby, error) {
+func GetCompletedLobbies(ctx *appctx.AppCtx, gameID *uuid.UUID) ([]Lobby, error) {
 	var lobbies []Lobby
 	err := ctx.DB().Preload("Players").
-		Where(&Lobby{Status: LOBBY_STATUS_CLOSED}).Order("ended_at desc").Find(&lobbies).Error
+		Where(&Lobby{Status: LOBBY_STATUS_CLOSED, GameID: *gameID}).Order("ended_at desc").Find(&lobbies).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get completed lobbies: %v", err)
 	}

@@ -30,7 +30,14 @@ type filterData struct {
 }
 
 func GetWinStats(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
-	stats, err := models.GetFilterStats(ctx, "win desc")
+	gameID, err := getGameIDFromCookie(r)
+	if err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("getting game id from cookie: %w", err)).SetTitle("Cookie Error").
+			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		return
+	}
+
+	stats, err := models.GetFilterStats(ctx, *gameID, "win desc")
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("getting win stats: %w", err)).SetTitle("Database Error").
 			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
@@ -55,7 +62,14 @@ func GetWinStats(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 }
 
 func GetLoseStats(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
-	stats, err := models.GetFilterStats(ctx, "lose desc")
+	gameID, err := getGameIDFromCookie(r)
+	if err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("getting game id from cookie: %w", err)).SetTitle("Cookie Error").
+			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		return
+	}
+
+	stats, err := models.GetFilterStats(ctx, *gameID, "lose desc")
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("getting lose stats: %w", err)).SetTitle("Database Error").
 			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
@@ -80,7 +94,14 @@ func GetLoseStats(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 }
 
 func GetTotalStats(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
-	stats, err := models.GetFilterStats(ctx, "total desc")
+	gameID, err := getGameIDFromCookie(r)
+	if err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("getting game id from cookie: %w", err)).SetTitle("Cookie Error").
+			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		return
+	}
+
+	stats, err := models.GetFilterStats(ctx, *gameID, "total desc")
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("getting total stats: %w", err)).SetTitle("Database Error").
 			Execute(w, httpErrors.AppErrTmplName, ctx.Error())

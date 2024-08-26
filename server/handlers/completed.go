@@ -15,7 +15,14 @@ import (
 var completedTmpl *template.Template
 
 func GetCompletedLobbies(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
-	lobbies, err := models.GetCompletedLobbies(ctx)
+	gameID, err := getGameIDFromCookie(r)
+	if err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("getting game id from cookie: %w", err)).SetTitle("Cookie Error").
+			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		return
+	}
+
+	lobbies, err := models.GetCompletedLobbies(ctx, gameID)
 	if err != nil {
 		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("getting completed lobbies: %w", err)))
 		return
