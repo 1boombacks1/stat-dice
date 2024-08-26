@@ -3,15 +3,9 @@
     <div class="circle side-bar-button">
         <img src="/images/menu.png">
     </div>
-    <h2 class="title">{{ .AppName }}</h2>
-    <div class="loggout">
-        <p class="info-text">{{ .Username }}</p>
-        <div class="loggout-btn" hx-get="/counter/logout">
-            <div class="rectangle"></div>
-            <div class="circle">
-                <img src="/images/exit.svg">
-            </div>
-        </div>
+    <div class="title">
+        <h2>{{ .AppName }}</h2>
+        <p>{{ .CurrentGameName }}</p>
     </div>
 </nav>
 {{ end }}

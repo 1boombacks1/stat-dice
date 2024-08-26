@@ -1,9 +1,11 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/1boombacks1/stat_dice/appctx"
+	"github.com/google/uuid"
 )
 
 type Game struct {
@@ -12,7 +14,18 @@ type Game struct {
 	Name string `gorm:"unique;not null"`
 }
 
-func GetGames(ctx *appctx.AppCtx) ([]Game, error) {
+type Games []Game
+
+func (g Games) GetByID(id uuid.UUID) (Game, error) {
+	for _, game := range g {
+		if game.ID == id {
+			return game, nil
+		}
+	}
+	return Game{}, errors.New("game not found")
+}
+
+func GetGames(ctx *appctx.AppCtx) (Games, error) {
 	var games []Game
 	if err := ctx.DB().Find(&games).Error; err != nil {
 		return nil, fmt.Errorf("getting game list: %w", err)

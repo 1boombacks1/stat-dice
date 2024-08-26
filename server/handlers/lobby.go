@@ -18,9 +18,23 @@ import (
 var lobbyTmpl *template.Template
 
 func LobbyPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
+	gameID, err := getGameIDFromCookie(r)
+	if err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("getting game id from cookie: %w", err)).SetTitle("Cookie Error").
+			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
+		return
+	}
+
 	games, err := models.GetGames(ctx)
 	if err != nil {
 		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("getting games: %w", err)).WithLog(ctx.Error()))
+		return
+	}
+
+	currentGame, err := games.GetByID(*gameID)
+	if err != nil {
+		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("not found game '%s'", gameID)))
+		ctx.Error().Str("game-id", gameID.String()).Msg("not found game")
 		return
 	}
 
@@ -36,19 +50,22 @@ func LobbyPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 
 	if err := lobbyTmpl.ExecuteTemplate(w, "index",
 		struct {
-			AppName    string
-			WindowName string
-			Username   string
-			Games      []models.Game
+			PageInfo pageInfo
 
 			IsHost    bool
 			Match     *models.Match
 			LobbyInfo LobbyInfo
 		}{
-			AppName:    ctx.Config().AppName,
-			WindowName: "Lobby " + lobby.Name,
-			Username:   user.Name,
-			Games:      games,
+			PageInfo: pageInfo{
+				AppName:         ctx.Config().AppName,
+				WindowName:      ctx.Config().AppName,
+				CurrentGameName: currentGame.Name,
+				SidebarInfo: sidebarInfo{
+					Username:      user.Name,
+					CurrentGameID: currentGame.GetID(),
+					Games:         games,
+				},
+			},
 
 			Match:  user.Match,
 			IsHost: user.Match.IsHost,

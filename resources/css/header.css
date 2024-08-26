@@ -1,9 +1,9 @@
 
 .header-nav {
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding-bottom: 0.5vh;
+    padding: 2vh 0;
     background-color: black;
     color: white;
 }
@@ -15,33 +15,23 @@
     margin-left: 3vw;
     width: var(--header-circle-size);
     height: var(--header-circle-size);
+    z-index: 1;
+    cursor: pointer;
 }
 
 .title {
-    /* width: 100%; */
-    /* position: absolute; */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
     text-align: center;
+}
+.title h2 {
     font-size: var(--font-xxl-size);
 }
-
-.loggout {
-    display: flex;
-    align-items: center;
-    margin: 3%;
-    gap: 0.4rem;
-    font-size: var(--font-l-size);
-}
-
-.loggout-btn {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    height: 100%;
-}
-
-.loggout-btn .circle {
-    width: var(--header-circle-size);
-    height: var(--header-circle-size);
+.title p {
+    font-size: var(--font-m-size);
+    color: var(--color-grey);
 }
 
 .circle {

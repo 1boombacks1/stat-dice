@@ -90,6 +90,8 @@ func (s *HTTPServer) initRoutes() {
 			s.DefineRoute(appR, "GET", "/get-players-win-stats", handlers.GetWinStats)
 			s.DefineRoute(appR, "GET", "/get-players-lose-stats", handlers.GetLoseStats)
 			s.DefineRoute(appR, "GET", "/get-players-total-stats", handlers.GetTotalStats)
+
+			s.DefineRoute(appR, "POST", "/game/{id}", handlers.SetGame)
 		})
 	}
 

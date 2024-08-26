@@ -1,8 +1,8 @@
 {{ define "index" }}
-    {{ template "html-header" . }}
+    {{ template "html-header" .PageInfo }}
 
     <div class="main">
-        {{ template "app-header" . }}
+        {{ template "app-header" .PageInfo }}
 
         <div class="content" id="app-content">
             {{ block "content" . }}
@@ -15,7 +15,7 @@
 
     <div id="error"></div>
 
-    {{ template "side-bar" .Games }}
+    {{ template "side-bar" .PageInfo.SidebarInfo }}
 
     {{ template "html-footer" }}
 {{ end }}

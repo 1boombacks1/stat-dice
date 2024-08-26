@@ -1,29 +1,51 @@
 {{ define "side-bar" }}
+{{ $CurrentGameID := .CurrentGameID }}
 <div id="side-bar" class="side-bar">
-    <div class="games">
-        <h2>Games</h2>
-        {{ range . }}
-            {{ template "game-link" . }}
-        {{ end }}
-        <a hx-get="/create-game" class="side-bar-link side-bar-create none">Create</a>
+    <div class="profile">
+        <div class="avatar">
+            <img src="/images/player.png" alt="player">
+        </div>
+        <div class="profile-name">
+            <p>Salamus 🤙</p>
+            <p>{{ .Username }}</p>
+        </div>
     </div>
+    <div class="separator"></div>
+    <div class="sidebar-menu">
+        <div class="games">
+            <div class="sidebar-header">
+                <img src="/images/games.png" alt="games">
+                <h2>Games</h2>
+            </div>
+            <ul class="games-list">
+                {{ range .Games }}
+                    {{ if eq .GetID $CurrentGameID }}
+                        <li hx-post="/counter/game/{{ .ID }}" class="sidebar-link active">{{ .Name }}</li>
+                    {{ else }}
+                        <li hx-post="/counter/game/{{ .ID }}" class="sidebar-link">{{ .Name }}</li>
+                    {{ end }}
+                {{ end }}
+            </ul>
+        </div>
+        <div class="sidebar-header" hx-get="/counter/logout">
+            <img src="/images/logout.png" alt="logout">
+            <h2>Logout</h2>
+        </div>
+    </div>
+    <div class="separator"></div>
     <div class="creator-info">
-        <p class="creator-name">D&D (Developed & Designed) by d0c (～￣▽￣)～</p>
+        <p class="creator-name">Developed & Designed by d0c<br/>(～￣▽￣)～</p>
         <div class="social-networks">
             <a href="https://github.com/1boombacks1">
-                <img src="/images/git.png" alt="github" class="contact-icon">
+                <img src="/images/git-mono.png" alt="github" class="contact-icon">
+            </a>
+            <a href="https://instagram.com/unfrucker">
+                <img src="/images/insta-mono.png" alt="telegram" class="contact-icon">
             </a>
             <a href="https://t.me/boombacks">
-                <img src="/images/tg.png" alt="telegram" class="contact-icon">
-            </a>
-            <a href="https://www.instagram.com/unfrucker">
-                <img src="/images/insta.png" alt="instagram" class="contact-icon">
+                <img src="/images/tg-mono.png" alt="instagram" class="contact-icon">
             </a>
         </div>
     </div>
 </div>
-{{ end }}
-
-{{ define "game-link" }}
-<a hx-get="/game?id={{ .ID }}" class="side-bar-link">{{ .Name }}</a>
 {{ end }}

@@ -33,10 +33,20 @@ func (l *Lobby) GetCurrentDuration() string {
 	if l.StartedAt == nil {
 		return "draft"
 	}
-	if l.EndedAt == nil {
-		return time.Since(*l.StartedAt).Truncate(time.Minute).String()
+	duration := time.Since(*l.StartedAt)
+	if l.EndedAt != nil {
+		duration = l.EndedAt.Sub(*l.StartedAt)
 	}
-	return l.EndedAt.Sub(*l.StartedAt).Truncate(time.Minute).String()
+	duration = duration.Truncate(time.Minute)
+
+	hours := int(duration.Hours())
+	minutes := int(duration.Minutes()) % 60
+
+	if hours > 0 {
+		return fmt.Sprintf("%dh %02dm", hours, minutes)
+	}
+
+	return fmt.Sprintf("%02dm", minutes)
 }
 
 func (l *Lobby) GetPlayerCount() string {

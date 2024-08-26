@@ -16,25 +16,46 @@ import (
 
 var baseTmpl *template.Template
 
+type pageInfo struct {
+	AppName         string
+	CurrentGameName string
+	WindowName      string
+	SidebarInfo     sidebarInfo
+}
+type sidebarInfo struct {
+	Username      string
+	CurrentGameID string
+	Games         []models.Game
+}
+
 func Index(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	games, err := models.GetGames(ctx)
 	if err != nil {
 		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("getting games: %w", err)))
 	}
 
-	if len(games) > 0 {
-		http.SetCookie(w, &http.Cookie{
-			Name:  "game-id",
-			Value: games[0].GetID(),
-			// Secure:   true, при HTTPS - включить
-			HttpOnly: true,
-		})
+	var currentGame models.Game
+	gameID, err := getGameIDFromCookie(r)
+	if err != nil {
+		if len(games) > 0 {
+			currentGame = games[0]
+			http.SetCookie(w, &http.Cookie{
+				Name:     "game-id",
+				Value:    currentGame.GetID(),
+				HttpOnly: true,
+			})
+		} else {
+			render.Render(w, r, httpErrors.ErrInternalServer(errors.New("админ забыл добавить игры. Напишите сюда t.me/boombacks")))
+			return
+		}
 	} else {
-		render.Render(w, r, httpErrors.ErrInternalServer(errors.New("админ забыл добавить игры. Напишите сюда t.me/boombacks")))
-		return
+		currentGame, err = games.GetByID(*gameID)
+		if err != nil {
+			render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("not found game '%s'", gameID)))
+			ctx.Error().Str("game-id", gameID.String()).Msg("not found game")
+			return
+		}
 	}
-
-	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
 
 	index, err := prepareIndexTemplate(ctx.Config().StartPage)
 	if err != nil {
@@ -42,20 +63,24 @@ func Index(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user := models.GetUserFromContext(appctx.FromContext(r.Context()))
+
 	if err := index.ExecuteTemplate(w, "index",
 		struct {
-			AppName    string
-			WindowName string
-			Games      []models.Game
-			Username   string
-			Match      *models.Match
+			PageInfo pageInfo
+			Match    *models.Match
 		}{
-			AppName:    ctx.Config().AppName,
-			WindowName: ctx.Config().AppName,
-			Games:      games,
-
-			Username: user.Name,
-			Match:    user.Match,
+			PageInfo: pageInfo{
+				AppName:         ctx.Config().AppName,
+				WindowName:      ctx.Config().AppName,
+				CurrentGameName: currentGame.Name,
+				SidebarInfo: sidebarInfo{
+					Username:      user.Name,
+					CurrentGameID: currentGame.GetID(),
+					Games:         games,
+				},
+			},
+			Match: user.Match,
 		},
 	); err != nil {
 		render.Render(w, r, httpErrors.ErrInternalServer(fmt.Errorf("rendering main page: %w", err)).WithLog(ctx.Error()))
