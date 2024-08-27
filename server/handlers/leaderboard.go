@@ -10,6 +10,7 @@ import (
 	"github.com/1boombacks1/stat_dice/models"
 	httpErrors "github.com/1boombacks1/stat_dice/server/http_errors"
 	"github.com/1boombacks1/stat_dice/server/templates"
+	"github.com/go-chi/chi/v5"
 )
 
 var leaderboardTmpl *template.Template
@@ -21,6 +22,11 @@ func LeaderboardContent(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Reque
 		return
 	}
 }
+
+const (
+	competitiveMode = "competitive"
+	unratedMode     = "unrated"
+)
 
 type filterData struct {
 	TemplateName string
@@ -37,7 +43,8 @@ func GetWinStats(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stats, err := models.GetFilterStats(ctx, *gameID, "win desc")
+	isCompetitive := competitiveMode == chi.URLParam(r, "mode")
+	stats, err := models.GetFilterStats(ctx, *gameID, isCompetitive, "win desc")
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("getting win stats: %w", err)).SetTitle("Database Error").
 			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
@@ -69,7 +76,8 @@ func GetLoseStats(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stats, err := models.GetFilterStats(ctx, *gameID, "lose desc")
+	isCompetitive := competitiveMode == chi.URLParam(r, "mode")
+	stats, err := models.GetFilterStats(ctx, *gameID, isCompetitive, "lose desc")
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("getting lose stats: %w", err)).SetTitle("Database Error").
 			Execute(w, httpErrors.AppErrTmplName, ctx.Error())
@@ -101,7 +109,8 @@ func GetTotalStats(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stats, err := models.GetFilterStats(ctx, *gameID, "total desc")
+	isCompetitive := competitiveMode == chi.URLParam(r, "mode")
+	stats, err := models.GetFilterStats(ctx, *gameID, isCompetitive, "total desc")
 	if err != nil {
 		httpErrors.ErrInternalServer(fmt.Errorf("getting total stats: %w", err)).SetTitle("Database Error").
 			Execute(w, httpErrors.AppErrTmplName, ctx.Error())

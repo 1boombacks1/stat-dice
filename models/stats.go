@@ -29,7 +29,7 @@ func (s *PlayerStat) IsChampion(status ResultStatus, max int) bool {
 	}
 }
 
-func GetFilterStats(ctx *appctx.AppCtx, gameID uuid.UUID, orderQuery string) ([]PlayerStat, error) {
+func GetFilterStats(ctx *appctx.AppCtx, gameID uuid.UUID, isCompetitive bool, orderQuery string) ([]PlayerStat, error) {
 	var stats []PlayerStat
 	err := ctx.DB().Debug().Model(&User{}).
 		Select(
@@ -40,7 +40,7 @@ func GetFilterStats(ctx *appctx.AppCtx, gameID uuid.UUID, orderQuery string) ([]
 			RESULT_STATUS_WIN, RESULT_STATUS_LOSE,
 		).
 		Joins("JOIN matches ON matches.user_id = users.id").
-		Joins("JOIN lobbies ON matches.lobby_id = lobbies.id").
+		Joins("JOIN lobbies ON matches.lobby_id = lobbies.id and lobbies.is_competitive = ?", isCompetitive).
 		Where("lobbies.game_id = ?", gameID).
 		Group("users.name").
 		Order(orderQuery).

@@ -173,28 +173,34 @@ ul {
     gap: .5vh;
 }
 
-.filter {
-    height: 7%;
+.filter-content {
+    display: flex;
+    flex-direction: column;
     margin: 1vh 4vw;
+    gap: 1vh;
+}
 
+.filter {
     position: relative;
     display: flex;
     align-items: center;
 
     border-radius: 30px;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    scrollbar-width: none;
+    overflow: hidden;
     border: 1px solid black;
     box-shadow: 4px 4px black;
 }
 
 .filter-btn {
+    padding: 1vh;
     width: 33.33%;
     text-align: center;
     cursor: pointer;
     color: black;
     z-index: 1;
+}
+.filter-btn.mode {
+    width: 50%;
 }
 
 .filter-btn.active {
@@ -211,6 +217,9 @@ ul {
     background-color: black;
     transition: transform 0.3s ease;
     border-radius: 25px;
+}
+.filter-indicator.mode {
+    width: 50%;
 }
 
 .chart {

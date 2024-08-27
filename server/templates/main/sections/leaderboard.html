@@ -1,41 +1,63 @@
 {{ block "content" .}}
 <div class="leaderboard">
-    <div class="filter">
-        <div class="filter-indicator"></div>
-        <div class="filter-btn active" data-index="0"
-            hx-get="/counter/get-players-win-stats" hx-swap="outerHTML" hx-target="#chart-list" hx-trigger="load,click">Wins</div>
-        <div class="filter-btn" data-index="1"
-            hx-get="/counter/get-players-lose-stats" hx-swap="outerHTML" hx-target="#chart-list">Lose</div>
-        <div class="filter-btn" data-index="2"
-            hx-get="/counter/get-players-total-stats" hx-swap="outerHTML" hx-target="#chart-list">Total</div>
+    <div class="filter-content">
+        <div class="filter mode">
+            <div class="filter-indicator mode"></div>
+            <div class="filter-btn mode active" data-index="0" data-mode="unrated" onclick="sendFilterReq()">Unrated</div>
+            <div class="filter-btn mode" data-index="1" data-mode="competitive" onclick="sendFilterReq()">🏆 Competitive</div>
+        </div>
+        <div class="filter base">
+            <div class="filter-indicator base"></div>
+            <div class="filter-btn base active" data-index="0"
+                hx-get="/counter/players-win-stats" hx-swap="outerHTML" hx-target="#chart-list" hx-trigger="load,click">Wins</div>
+            <div class="filter-btn base" data-index="1"
+                hx-get="/counter/players-lose-stats" hx-swap="outerHTML" hx-target="#chart-list">Lose</div>
+            <div class="filter-btn base" data-index="2"
+                hx-get="/counter/players-total-stats" hx-swap="outerHTML" hx-target="#chart-list">Total</div>
+        </div>
     </div>
-
-    <!-- <div class="diagram">
-
-    </div> -->
     <div class="chart">
         <div class="leaderboard-title">
             <h2>Leaderboard</h2>
             <p>{{ . }}</p>
         </div>
-        <ul id="chart-list" class="chart-list" hx-get="/counter/get-players-win-stats" hx-swap="outerHTML">
+        <ul id="chart-list" class="chart-list">
         </ul>
     </div>
 </div>
 <script>
-    if (typeof buttons === 'undefined') {
-        const buttons = document.querySelectorAll('.filter-btn');
-        const indicator = document.querySelector('.filter-indicator');
+    if (typeof baseButtons === 'undefined') {
+        document.querySelector(".filter.base").addEventListener('htmx:configRequest', (event) => {
+            const mode = document.querySelector('.filter-btn.mode.active').getAttribute('data-mode');
+            event.detail.path += "/" + mode
+        })
 
-        buttons.forEach(button => {
-            button.addEventListener('click', () => {
-                buttons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
+        function sendFilterReq() {
+            setTimeout(() => {
+                htmx.trigger('.filter-btn.base.active', 'click')
+            }, 0);
+        }
 
-                const index = button.dataset.index;
-                indicator.style.transform = `translateX(${index * 100}%)`;
+        const setFilterAnimation = (buttons, indicator) => {
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Удаление класса active у всех кнопок
+                    buttons.forEach(btn => btn.classList.remove('active'));
+                    // Добавление класса active текущей кнопке
+                    button.classList.add('active');
+                    // Перемещение черного индикатора
+                    const index = button.dataset.index;
+                    indicator.style.transform = `translateX(${index * 100}%)`;
+                });
             });
-        });
+        }
+        const baseButtons = document.querySelectorAll('.filter-btn.base');
+        const baseIndicator = document.querySelector('.filter-indicator.base');
+        setFilterAnimation(baseButtons, baseIndicator);
+
+        const modeButtons = document.querySelectorAll('.filter-btn.mode');
+        const modeIndicator = document.querySelector('.filter-indicator.mode');
+        setFilterAnimation(modeButtons, modeIndicator);
     }
 </script>
 {{ end }}
