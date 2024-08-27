@@ -70,7 +70,6 @@ func Login(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 
-	// w.Header().Set("HX-Redirect", "/counter")
 	w.Header().Set("Content-Type", "application/json")
 	render.DefaultResponder(w, r, render.M{
 		"token": token,
@@ -110,7 +109,23 @@ func Registration(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, `<span id="success-label" class="success-text">☑️ Registration success!</span>`)
+	// fmt.Fprint(w, `<span id="success-label" class="success-text">☑️ Registration success!</span>`)
+	token, err := user.GenerateJWT(ctx)
+	if err != nil {
+		httpErrors.ErrInternalServer(fmt.Errorf("failed to generate token: %w", err)).
+			SetElementID(signUpErrElement).Execute(w, httpErrors.AuthErrTmplName, ctx.Error())
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Path:  "/counter",
+		Name:  "token",
+		Value: token,
+		// Secure:   true, при HTTPS - включить
+		HttpOnly: true,
+	})
+
+	redirectTo(w, "/counter")
 }
 
 func init() {

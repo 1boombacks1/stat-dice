@@ -152,7 +152,5 @@ func init() {
 		"main/base.html",
 		"main/root/*.html",
 		"main/components/*.html",
-		// "main/pages/*.html",
-		// "main/sections/*.html",
 	))
 }

@@ -43,6 +43,7 @@ func GetOpenLobbies(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) 
 		ID           string
 		Name         string
 		CreatedAt    string
+		GameID       string
 		PlayersCount string
 		Players      []*models.User
 	}
@@ -54,6 +55,7 @@ func GetOpenLobbies(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) 
 			ID:           lobby.GetID(),
 			Name:         lobby.Name,
 			CreatedAt:    lobby.GetCreatedAt(),
+			GameID:       lobby.GameID.String(),
 			PlayersCount: lobby.GetPlayerCount(),
 			Players:      lobby.Players,
 		})

@@ -20,6 +20,7 @@
 
 {{ define "lobby-item" }}
 {{ $ctx := .Context }}
+{{ $GameID := .GameID }}
 <li class="lobby-item">
     <p class="lobby-item-header">{{ .Name }}</p>
     <table class="lobby-item-table">
@@ -30,7 +31,7 @@
         {{ range $Player := .Players }}
             <tr>
                 <td class="lobby-item-table-row">{{ $Player.Name }}</td>
-                <td class="lobby-item-table-row">{{ $Player.GetWinrate $ctx }}%</td>
+                <td class="lobby-item-table-row">{{ $Player.GetWinrate $ctx $GameID }}%</td>
             </tr>
         {{ end }}
     </table>
