@@ -102,12 +102,14 @@ func getUserByLogin(ctx *appctx.AppCtx, login string) (*User, error) {
 	var user *User
 	// Take() ищет без сортировки, в отличии от First() или Last()
 	// Find() не возвращает ошибку ErrRecordNotFound. Принимает как одну струкутуру так и срез
-	err := ctx.DB().Preload("Match").Preload("Match.User").Preload("Match.Lobby").Preload("Match.Lobby.Players").
-		Select("users.*, matches.*").
-		Joins("LEFT JOIN matches ON matches.user_id = users.id").
-		Joins("LEFT JOIN lobbies ON matches.lobby_id = lobbies.id").
+	err := ctx.DB().
+		// Preload("Match").
+		// Preload("Match.User").Preload("Match.Lobby").Preload("Match.Lobby.Players").
+		// Select("users.*, matches.*").
+		// Joins("LEFT JOIN matches ON matches.user_id = users.id").
+		// Joins("LEFT JOIN lobbies ON matches.lobby_id = lobbies.id").
 		Where("users.login = ?", login).
-		Order("lobbies.created_at DESC").
+		// Order("lobbies.created_at DESC").
 		First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -116,10 +118,22 @@ func getUserByLogin(ctx *appctx.AppCtx, login string) (*User, error) {
 		return nil, fmt.Errorf("getting user: %w", err)
 	}
 
-	if user.Match != nil && user.Match.Lobby.Status == LOBBY_STATUS_CLOSED {
-		user.Match = nil
+	var match *Match
+	err = ctx.DB().Preload("User").Preload("Lobby").Preload("Lobby.Players").
+		Joins("LEFT JOIN lobbies ON matches.lobby_id = lobbies.id").
+		Where("lobbies.status != ?", LOBBY_STATUS_CLOSED).
+		Where("matches.user_id = ?", user.ID).
+		Order("lobbies.created_at DESC").
+		First(&match).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			match = nil
+		} else {
+			return nil, fmt.Errorf("getting user match: %w", err)
+		}
 	}
 
+	user.Match = match
 	return user, nil
 }
 

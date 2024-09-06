@@ -16,20 +16,11 @@ func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := appctx.FromContext(r.Context())
 
-		// token, err := extractToken(r)
-		// if err != nil {
-		// 	render.Render(w, r, httpErr.NewHTTPErrorWithExplanation(
-		// 		fmt.Errorf("failed to extract token: %w", err),
-		// 		http.StatusUnauthorized,
-		// 		fmt.Sprintf("failed to extract token: %v", err),
-		// 	))
-		// 	return
-		// }
-
 		cookie, err := r.Cookie("token")
 		if err != nil {
 			if errors.Is(err, http.ErrNoCookie) {
-				render.Render(w, r, httpErrors.ErrUnauthorized(errors.New("cookie not found")))
+				w.Header().Set("HX-Redirect", "/login")
+				// http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 				return
 			}
 			render.Render(w, r, httpErrors.ErrUnauthorized(fmt.Errorf("failed to get cookie: %w", err)))

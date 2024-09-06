@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -20,7 +19,8 @@ func CheckAccessLobby(next http.Handler) http.Handler {
 		user := models.GetUserFromContext(ctx)
 
 		if user.Match == nil || user.Match.Lobby.GetID() != lobbyID {
-			render.Render(w, r, httpErrors.ErrUnauthorized(errors.New("ты в сделку не входил. Отказано в доступе к лобби")))
+			http.Redirect(w, r, "/counter", http.StatusTemporaryRedirect)
+			// render.Render(w, r, httpErrors.ErrUnauthorized(errors.New("ты в сделку не входил. Отказано в доступе к лобби")))
 			return
 		}
 

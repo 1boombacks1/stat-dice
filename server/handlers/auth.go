@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"time"
 
 	"github.com/1boombacks1/stat_dice/appctx"
 	"github.com/1boombacks1/stat_dice/models"
@@ -21,8 +22,13 @@ const (
 )
 
 func AuthPage(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
-	if err := authTmpl.Execute(w, nil); err != nil {
-		panic(fmt.Errorf("rendering template: %w", err))
+	_, err := r.Cookie("token")
+	if err != nil {
+		if err := authTmpl.Execute(w, nil); err != nil {
+			panic(fmt.Errorf("rendering template: %w", err))
+		}
+	} else {
+		http.Redirect(w, r, "/counter", http.StatusTemporaryRedirect)
 	}
 }
 
@@ -63,9 +69,10 @@ func Login(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Path:  "/counter",
-		Name:  "token",
-		Value: token,
+		Path:    "/",
+		Name:    "token",
+		Value:   token,
+		Expires: time.Now().Add(ctx.Config().JWTDuration),
 		// Secure:   true, при HTTPS - включить
 		HttpOnly: true,
 	})
@@ -118,9 +125,10 @@ func Registration(ctx *appctx.AppCtx, w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Path:  "/counter",
-		Name:  "token",
-		Value: token,
+		Path:    "/",
+		Name:    "token",
+		Value:   token,
+		Expires: time.Now().Add(ctx.Config().JWTDuration),
 		// Secure:   true, при HTTPS - включить
 		HttpOnly: true,
 	})

@@ -68,20 +68,19 @@ func (m *Match) Delete(ctx *appctx.AppCtx) error {
 }
 
 func (m *Match) AfterUpdate(tx *gorm.DB) error {
-	var players []*User
-	err := tx.Model(&User{}).Preload("Match").
-		Joins("JOIN matches on matches.user_id = users.id").
+	var count int64
+	err := tx.Model(&Match{}).
 		Joins("JOIN lobbies on matches.lobby_id = lobbies.id").
+		Where("lobby_id = ?", m.LobbyID).
+		Where("result = ?", RESULT_STATUS_PLAYING).
 		Where("lobbies.status IN ?", []LobbyStatus{LOBBY_STATUS_OPEN, LOBBY_STATUS_PROCESSING, LOBBY_STATUS_RESULT}).
-		Find(&players).Error
+		Count(&count).Error
 	if err != nil {
-		return fmt.Errorf("getting players: %w", err)
+		return fmt.Errorf("getting count: %w", err)
 	}
 
-	for _, player := range players {
-		if player.Match.Result == RESULT_STATUS_PLAYING {
-			return nil
-		}
+	if count > 0 {
+		return nil
 	}
 
 	if err := m.Lobby.Close(tx); err != nil {
